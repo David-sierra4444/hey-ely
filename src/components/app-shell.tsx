@@ -76,9 +76,9 @@ export function AppShell({ children, admin = false }: { children?: ReactNode; ad
                 <span className="text-[11px] text-muted-foreground">Nivel {profile.level} · {profile.xp} XP</span>
               </div>
             )}
-            <Link to="/web/inicio" className="rounded-full border p-2 hover:bg-secondary" title="Página web oficial">
-              <Globe className="h-4 w-4" />
-            </Link>
+            <a href="https://hey-ely-ears-to-you.lovable.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold hover:bg-secondary" title="Sitio web oficial de Hey Ely">
+              <Globe className="h-4 w-4" /> <span className="hidden sm:inline">Sitio Web</span>
+            </a>
             <button onClick={signOut} className="rounded-full border p-2 hover:bg-secondary" title="Salir">
               <LogOut className="h-4 w-4" />
             </button>
