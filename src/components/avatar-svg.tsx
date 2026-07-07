@@ -67,8 +67,8 @@ export function AvatarSVG({ config, size = 160 }: { config: AvatarConfig; size?:
       )}
       {c.hair === "braids" && (
         <g>
-          <path d="M44 80 Q25 140 35 200" fill="none" stroke={c.hairColor} strokeWidth="12" strokeLinecap="round" {...strokeProps} />
-          <path d="M156 80 Q175 140 165 200" fill="none" stroke={c.hairColor} strokeWidth="12" strokeLinecap="round" {...strokeProps} />
+          <path d="M44 80 Q25 140 35 200" fill="none" stroke={c.hairColor} strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M156 80 Q175 140 165 200" fill="none" stroke={c.hairColor} strokeWidth="12" strokeLinecap="round" strokeLinejoin="round" />
         </g>
       )}
 

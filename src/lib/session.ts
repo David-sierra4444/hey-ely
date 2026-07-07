@@ -149,7 +149,7 @@ export function getNextAvatarUnlock(xp: number): { requiredXp: number; item: Rew
   const missing = nextReward.requiredXp - xp;
   return {
     requiredXp: nextReward.requiredXp,
-    item: nextReward.items ? (nextReward as any).items[0] : nextReward,
+    item: nextReward,
     missingXp: missing,
     text: `${nextReward.name} (Necesitas ${nextReward.requiredXp} XP, faltan ${missing} XP)`
   };
