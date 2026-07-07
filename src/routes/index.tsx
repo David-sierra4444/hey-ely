@@ -24,6 +24,9 @@ function Landing() {
             <Link to="/web/familias" className="hover:text-primary">Familias</Link>
             <Link to="/web/faq" className="hover:text-primary">FAQ</Link>
             <Link to="/web/contacto" className="hover:text-primary">Contacto</Link>
+            <a href="https://hey-ely-ears-to-you.lovable.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+              <Sparkles className="h-3.5 w-3.5" /> Sitio Web
+            </a>
           </nav>
           <Link to="/auth" className="rounded-full bg-primary px-5 py-2 text-primary-foreground font-semibold shadow-soft">Entrar</Link>
         </div>
