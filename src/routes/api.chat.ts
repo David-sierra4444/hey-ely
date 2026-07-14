@@ -98,7 +98,7 @@ export const Route = createFileRoute('/api/chat')({
               'Authorization': `Bearer ${groqApiKey}`
             },
             body: JSON.stringify({
-              model: "llama-3.3-70b-versatile",
+              model: "llama-3.1-8b-instant", // Se cambió por el modelo ligero y ultra-rápido para evitar rate limits
               messages: formattedMessages,
               temperature: 0.6, // Temperatura asertiva para control clínico/emocional
               max_tokens: 2048
