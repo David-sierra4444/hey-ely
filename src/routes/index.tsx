@@ -18,6 +18,8 @@ function Landing() {
       <header className="sticky top-0 z-30 backdrop-blur-md bg-background/70 border-b">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
           <LogoMark />
+          
+          {/* Menú de navegación para computadoras (se oculta en celulares con "hidden") */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-semibold">
             <Link to="/web/que-es" className="hover:text-primary">¿Qué es?</Link>
             <Link to="/web/instituciones" className="hover:text-primary">Instituciones</Link>
@@ -28,7 +30,21 @@ function Landing() {
               <Sparkles className="h-3.5 w-3.5" /> Sitio Web
             </a>
           </nav>
-          <Link to="/auth" className="rounded-full bg-primary px-5 py-2 text-primary-foreground font-semibold shadow-soft">Entrar</Link>
+          
+          {/* Zona derecha de botones (agregamos el botón para celulares al lado de "Entrar") */}
+          <div className="flex items-center gap-4">
+            <a 
+              href="https://hey-ely-ears-to-you.lovable.app/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="md:hidden flex items-center gap-1 text-xs sm:text-sm text-primary font-semibold hover:underline"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> Sitio Web
+            </a>
+            <Link to="/auth" className="rounded-full bg-primary px-5 py-2 text-primary-foreground font-semibold shadow-soft">
+              Entrar
+            </Link>
+          </div>
         </div>
       </header>
 
