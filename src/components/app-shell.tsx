@@ -53,7 +53,7 @@ export function AppShell({ children, admin = false }: { children?: ReactNode; ad
   }
 
   return (
-    <div className="min-h-screen pb-24 md:pb-0">
+    <div className="min-h-screen pb-28 md:pb-0">
       <header className="sticky top-0 z-30 backdrop-blur-md bg-background/70 border-b">
         <div className="max-w-7xl mx-auto flex items-center gap-4 px-4 py-3">
           <Link to="/"><LogoMark size={34} /></Link>
@@ -90,17 +90,20 @@ export function AppShell({ children, admin = false }: { children?: ReactNode; ad
         {children ?? <Outlet />}
       </main>
 
-      {/* Mobile bottom nav */}
+      {/* Mobile bottom nav (AHORA DESLIZABLE HORIZONTALMENTE) */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur border-t">
-        <div className="grid grid-cols-5">
-          {nav.slice(0, 5).map((item) => {
+        <div className="flex overflow-x-auto scrollbar-none py-2 px-3 gap-1">
+          {nav.map((item) => {
             const active = item.exact ? loc.pathname === item.to : loc.pathname.startsWith(item.to);
             const Icon = item.icon;
             return (
-              <Link key={item.to} to={item.to}
-                className={`flex flex-col items-center gap-0.5 py-2 text-[11px] ${active ? "text-primary font-bold" : "text-muted-foreground"}`}>
+              <Link 
+                key={item.to} 
+                to={item.to}
+                className={`flex flex-col items-center justify-center gap-1 py-1.5 px-3 text-[11px] flex-shrink-0 min-w-[76px] rounded-xl transition-colors ${active ? "text-primary font-bold bg-primary/10" : "text-muted-foreground hover:text-foreground"}`}
+              >
                 <Icon className="h-5 w-5" />
-                {item.label}
+                <span>{item.label}</span>
               </Link>
             );
           })}
