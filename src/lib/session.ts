@@ -63,7 +63,7 @@ export function computeLevel(xp: number) {
 }
 
 // =======================================================
-// NUEVO SISTEMA DE RECOMPENSAS SÍNCRONO POR CADA 10 PUNTOS DE XP
+// NUEVO SISTEMA DE RECOMPENSAS SÍNCRONO POR CADA 30 PUNTOS DE XP
 // =======================================================
 
 export type RewardItem = {
@@ -75,10 +75,10 @@ export type RewardItem = {
 
 /**
  * Lista maestra ordenada de todos los desbloqueables del juego.
- * Cada elemento requiere exactamente 10 puntos de XP más que el anterior de manera lineal.
+ * Cada elemento requiere exactamente 30 puntos de XP más que el anterior.
  */
 const AVATAR_REWARDS: RewardItem[] = [
-  // Básicos iniciales (Desbloqueados con 0 XP)
+  // --- BÁSICOS INICIALES (Desbloqueados con 0 XP) ---
   { id: "short", name: "Cabello Corto Estándar", category: "hair", requiredXp: 0 },
   { id: "normal", name: "Ojos Normales", category: "eyes", requiredXp: 0 },
   { id: "happy", name: "Expresión Alegre", category: "mood", requiredXp: 0 },
@@ -86,30 +86,65 @@ const AVATAR_REWARDS: RewardItem[] = [
   { id: "tee", name: "Camiseta Básica", category: "outfit", requiredXp: 0 },
   { id: "hoodie", name: "Sudadera Hoodie", category: "outfit", requiredXp: 0 },
 
-  // Hitos de Desbloqueo Constante cada 10 XP progresivos
-  { id: "curly", name: "Peinado Rizado", category: "hair", requiredXp: 10 },
-  { id: "wink", name: "Ojo Guiñado", category: "eyes", requiredXp: 20 },
-  { id: "thinking", name: "Expresión Pensativa", category: "mood", requiredXp: 30 },
-  { id: "long", name: "Cabello Largo Anime", category: "hair", requiredXp: 40 },
-  { id: "sparkle", name: "Ojos Brillantes", category: "eyes", requiredXp: 50 },
-  { id: "excited", name: "Expresión Entusiasmada", category: "mood", requiredXp: 60 },
-  { id: "jacket", name: "Chaqueta Elegante", category: "outfit", requiredXp: 70 },
-  { id: "glasses", name: "Gafas Modernas", category: "accessory", requiredXp: 80 },
-  { id: "ponytail", name: "Coleta Ponytail", category: "hair", requiredXp: 90 },
-  { id: "star", name: "Ojos de Estrella ✨", category: "eyes", requiredXp: 100 },
-  { id: "sweater", name: "Suéter Cómodo", category: "outfit", requiredXp: 110 },
-  { id: "cap", name: "Gorra Deportiva", category: "accessory", requiredXp: 120 },
-  { id: "buns", name: "Peinado de Chongos (Buns)", category: "hair", requiredXp: 130 },
-  { id: "surprised", name: "Expresión Sorprendida", category: "mood", requiredXp: 140 },
-  { id: "dress", name: "Vestido de Gala", category: "outfit", requiredXp: 150 },
-  { id: "headphones", name: "Audífonos Gamer", category: "accessory", requiredXp: 160 },
-  { id: "spiky", name: "Cabello Picudo (Spiky)", category: "hair", requiredXp: 170 },
-  { id: "anime-sad", name: "Ojos Emotivos Anime", category: "eyes", requiredXp: 180 },
-  { id: "cool", name: "Expresión Desafiante / Cool", category: "mood", requiredXp: 190 },
-  { id: "overalls", name: "Jardinera / Overol", category: "outfit", requiredXp: 200 },
-  { id: "braids", name: "Cabello con Trenzas", category: "hair", requiredXp: 210 },
-  { id: "scarf", name: "Bufanda Invernal", category: "accessory", requiredXp: 220 },
-  { id: "crown", name: "Corona Imperial Kawaii 👑", category: "accessory", requiredXp: 250 },
+  // --- HITOS DE DESBLOQUEO PROGRESIVO CADA 30 XP ---
+  { id: "curly", name: "Peinado Rizado", category: "hair", requiredXp: 30 },
+  { id: "wink", name: "Ojo Guiñado", category: "eyes", requiredXp: 60 },
+  { id: "thinking", name: "Expresión Pensativa", category: "mood", requiredXp: 90 },
+  { id: "long", name: "Cabello Largo Anime", category: "hair", requiredXp: 120 },
+  { id: "sparkle", name: "Ojos Brillantes", category: "eyes", requiredXp: 150 },
+  { id: "excited", name: "Expresión Entusiasmada", category: "mood", requiredXp: 180 },
+  { id: "jacket", name: "Chaqueta Elegante", category: "outfit", requiredXp: 210 },
+  { id: "glasses", name: "Gafas Modernas", category: "accessory", requiredXp: 240 },
+  { id: "ponytail", name: "Coleta Ponytail", category: "hair", requiredXp: 270 },
+  { id: "star", name: "Ojos de Estrella ✨", category: "eyes", requiredXp: 300 },
+  { id: "sweater", name: "Suéter Cómodo", category: "outfit", requiredXp: 330 },
+  { id: "cap", name: "Gorra Deportiva", category: "accessory", requiredXp: 360 },
+  { id: "buns", name: "Peinado de Chongos (Buns)", category: "hair", requiredXp: 390 },
+  { id: "surprised", name: "Expresión Sorprendida", category: "mood", requiredXp: 420 },
+  { id: "dress", name: "Vestido de Gala", category: "outfit", requiredXp: 450 },
+  { id: "headphones", name: "Audífonos Gamer", category: "accessory", requiredXp: 480 },
+  { id: "spiky", name: "Cabello Picudo (Spiky)", category: "hair", requiredXp: 510 },
+  { id: "anime-sad", name: "Ojos Emotivos Anime", category: "eyes", requiredXp: 540 },
+  { id: "cool", name: "Expresión Desafiante / Cool", category: "mood", requiredXp: 570 },
+  { id: "overalls", name: "Jardinera / Overol", category: "outfit", requiredXp: 600 },
+  { id: "braids", name: "Cabello con Trenzas", category: "hair", requiredXp: 630 },
+  { id: "scarf", name: "Bufanda Invernal", category: "accessory", requiredXp: 660 },
+  { id: "sleeping", name: "Ojos Durmientes", category: "eyes", requiredXp: 690 },
+  { id: "kimono", name: "Kimono Tradicional", category: "outfit", requiredXp: 720 },
+  { id: "crown", name: "Corona Imperial Kawaii 👑", category: "accessory", requiredXp: 750 },
+  { id: "wolfcut", name: "Corte Wolfcut Estilo", category: "hair", requiredXp: 780 },
+  { id: "unimpressed", name: "Ojos de Desinterés", category: "eyes", requiredXp: 810 },
+  { id: "jersey", name: "Jersey Deportivo", category: "outfit", requiredXp: 840 },
+  { id: "gato", name: "Gatito Compañero 🐱", category: "accessory", requiredXp: 870 },
+  { id: "mohawk", name: "Corte Mohawk Rebelde", category: "hair", requiredXp: 900 },
+  { id: "dizzy", name: "Ojos Mareados / Espirales", category: "eyes", requiredXp: 930 },
+  { id: "chef", name: "Uniforme de Chef Ejecutivo", category: "outfit", requiredXp: 960 },
+  { id: "lentes_corazon", name: "Gafas de Corazón", category: "accessory", requiredXp: 990 },
+  { id: "space-buns", name: "Chongos Espaciales (Space Buns)", category: "hair", requiredXp: 1020 },
+  { id: "heart-eyes", name: "Ojos Enamorados de Corazón", category: "eyes", requiredXp: 1050 },
+  { id: "wizard", name: "Túnica de Mago Místico", category: "outfit", requiredXp: 1080 },
+  { id: "halo", name: "Halo Celestial", category: "accessory", requiredXp: 1110 },
+  { id: "flat-top", name: "Corte Flat-Top Retro", category: "hair", requiredXp: 1140 },
+  { id: "glamor", name: "Ojos Glamour con Pestañas", category: "eyes", requiredXp: 1170 },
+  { id: "suit", name: "Traje Formal Elegante", category: "outfit", requiredXp: 1200 },
+  { id: "eyepatch", name: "Parche de Pirata de Cuero", category: "accessory", requiredXp: 1230 },
+  { id: "curly-bob", name: "Corte Bob Rizado Glam", category: "hair", requiredXp: 1260 },
+  { id: "monocle", name: "Monóculo de Oro Aristocrático", category: "eyes", requiredXp: 1290 },
+  { id: "astronaut", name: "Traje de Astronauta Espacial", category: "outfit", requiredXp: 1320 },
+  { id: "ribbon", name: "Lazo Rosa Coquette", category: "accessory", requiredXp: 1350 },
+  { id: "vintage-waves", name: "Ondas Vintage Clásicas", category: "hair", requiredXp: 1380 },
+  { id: "pixel-retro", name: "Ojos Pixelados Retro 8-bit", category: "eyes", requiredXp: 1410 },
+  { id: "pajamas", name: "Pijama Cómoda de Estrellas", category: "outfit", requiredXp: 1440 },
+  { id: "detective-hat", name: "Sombrero de Detective Holmes", category: "accessory", requiredXp: 1470 },
+  { id: "detective", name: "Gabardina de Detective Privado", category: "outfit", requiredXp: 1500 },
+  { id: "chef-hat", name: "Sombrero de Chef Toque", category: "accessory", requiredXp: 1530 },
+  { id: "builder", name: "Chaleco de Constructor", category: "outfit", requiredXp: 1560 },
+  { id: "flower", name: "Flor para el Pelo", category: "accessory", requiredXp: 1590 },
+  { id: "ninja", name: "Traje Shinobi Ninja", category: "outfit", requiredXp: 1620 },
+  { id: "clown-nose", name: "Nariz de Payaso Roja", category: "accessory", requiredXp: 1650 },
+  { id: "overcoat", name: "Abrigo de Invierno Elegante", category: "outfit", requiredXp: 1680 },
+  { id: "swimsuit", name: "Traje de Baño Deportivo", category: "outfit", requiredXp: 1710 },
+  { id: "clown", name: "Traje de Payaso Colorido", category: "outfit", requiredXp: 1740 },
 ];
 
 /**
@@ -133,7 +168,7 @@ export function isAvatarItemUnlocked(itemId: string, xp: number): boolean {
   if (itemId === "none" || itemId === "bald") return true;
   
   const reward = AVATAR_REWARDS.find((item) => item.id === itemId);
-  if (!reward) return true; // Si el ID no está restringido en el catálogo de recompensas, se considera libre por defecto
+  if (!reward) return true; // Si el ID no está restringido en el catálogo, se considera libre por defecto
   
   return xp >= reward.requiredXp;
 }
