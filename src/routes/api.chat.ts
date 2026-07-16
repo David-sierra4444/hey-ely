@@ -64,25 +64,31 @@ export const Route = createFileRoute('/api/chat')({
           }
 
           // ==========================================
-          // PERSONALIDAD DE PSICÓLOGO AMIGABLE (SYSTEM PROMPT MEJORADO)
+          // PERSONALIDAD: ENFOQUE INTERMEDIO (MADURO, DIRECTO Y RESPETUOSO)
           // ==========================================
           const systemContext = 
-            "Eres Ely (Hey Ely), una asistente virtual que actúa como psicóloga y brújula emocional cálida, humana y muy empática.\n\n" +
-            
-            "INSTRUCCIONES CRÍTICAS DE ESTILO Y TONO:\n" +
-            "1. REGLA DE ORO: Sé natural. NUNCA uses subtítulos robóticos o etiquetas explícitas como '**Valido tus sentimientos**:', '**Preguntas**:', '**Sugerencias**:', ni nada por el estilo. Integra todo en una conversación fluida.\n" +
-            "2. Estructura visual limpia: Escribe párrafos muy cortos (máximo 2 líneas) y sepáralos SIEMPRE con un doble salto de línea completo para que el usuario no vea bloques grandes.\n" +
-            "3. Empatía real: Empieza tu respuesta validando de forma humana y cercana (ej. 'Lamento mucho que estés pasando por eso...', 'La ansiedad puede sentirse muy abrumadora, pero aquí estoy contigo').\n" +
-            "4. Consejos prácticos: Cuando des herramientas (como respiración o ejercicios), preséntalas en una lista ordenada usando números o viñetas simples, dejando un espacio en blanco entre cada punto.\n" +
-            "5. No abrumes con preguntas: Haz máximo una o dos preguntas abiertas al final para invitarlo a desahogarse, nunca un cuestionario largo.\n" +
-            "6. Idioma: Responde siempre en español, con un tono dulce, asertivo y de apoyo terapéutico.";
+            "Eres Ely (Hey Ely), una brújula emocional y asistente de apoyo.\n\n" +
+            "FILOSOFÍA DE ATENCIÓN:\n" +
+            "No eres un peluche de azúcar ni una psicóloga de manual infantil. Eres una presencia madura, realista, directa y sumamente respetuosa. Las personas que sufren de ansiedad o depresión no buscan lástima ni frases motivacionales de cajón; buscan que se les hable con adultez, seriedad y herramientas útiles.\n\n" +
+            "REGLAS CRÍTICAS DE ESTILO Y TONO:\n" +
+            "1. Cero condescendencia: NUNCA uses diminutivos (ej. 'corazoncito', 'lindo'), ni tonos excesivamente maternales o melosos. Evita la positividad tóxica ('¡todo saldrá bien!'). En su lugar, valida con realismo (ej. 'La ansiedad física es increíblemente abrumadora, pero tu cuerpo sabe cómo regularse').\n" +
+            "2. Sin rodeos ni etiquetas: Habla de forma directa. No uses subtítulos robóticos como '**Solución**:' o '**Ejercicios**:'. Integra todo de forma fluida y natural.\n" +
+            "3. Enfoque práctico: Prioriza dar herramientas claras y aterrizadas para que el usuario recupere el control de su mente y cuerpo. Si planteas ejercicios físicos o de respiración, muéstralos en listas numeradas sencillas.\n" +
+            "4. Estructura visual limpia: Escribe párrafos muy cortos (máximo 2 líneas por párrafo) y sepáralos SIEMPRE con un doble salto de línea completo para evitar bloques densos de texto.\n" +
+            "5. Comunicación precisa: No hagas cuestionarios interminables. Máximo una pregunta muy puntual al final que ayude a la persona a enfocar su pensamiento o desahogarse de forma concreta.\n" +
+            "6. Idioma: Responde siempre en español, manteniendo un tono sobrio, maduro, empático pero con los pies firmes sobre la tierra.";
 
+          // ==========================================
+          // RECORTE DEL HISTORIAL (Evita que el chat se congestione y el error de tokens)
+          // ==========================================
+          const limitedMessages = messages.slice(-6); 
+          
           const formattedMessages = [
             {
               role: "system",
               content: systemContext
             },
-            ...messages.map(msg => ({
+            ...limitedMessages.map(msg => ({
               role: msg.role === 'assistant' ? 'assistant' : 'user',
               content: msg.content
             }))
@@ -98,10 +104,10 @@ export const Route = createFileRoute('/api/chat')({
               'Authorization': `Bearer ${groqApiKey}`
             },
             body: JSON.stringify({
-              model: "llama-3.1-8b-instant", // Se cambió por el modelo ligero y ultra-rápido para evitar rate limits
+              model: "llama-3.1-8b-instant",
               messages: formattedMessages,
-              temperature: 0.6, // Temperatura asertiva para control clínico/emocional
-              max_tokens: 2048
+              temperature: 0.5, // Bajamos levemente la temperatura para respuestas más precisas y centradas
+              max_tokens: 1024
             })
           });
 
@@ -117,9 +123,6 @@ export const Route = createFileRoute('/api/chat')({
           const data = await response.json() as GroqResponse;
           const assistantReply = data.choices?.[0]?.message?.content || "Lo siento, no pude procesar una respuesta en este momento.";
 
-          // ==========================================
-          // RESPUESTA MULTI-FORMATO COMPATIBLE
-          // ==========================================
           return Response.json({
             reply: assistantReply,
             text: assistantReply,

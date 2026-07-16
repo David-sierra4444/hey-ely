@@ -42,67 +42,76 @@
 :root {
   --radius: 1.25rem;
 
-  /* Palette derived from Hey Ely logo — soft pastel */
-  --ely-blue: oklch(0.78 0.09 240);
-  --ely-pink: oklch(0.82 0.08 5);
-  --ely-mint: oklch(0.86 0.09 165);
-  --ely-lavender: oklch(0.80 0.09 305);
-  --ely-cream: oklch(0.985 0.008 90);
+  /* Nueva paleta madura y neutral — Tonos tierra, sage y pizarra */
+  --ely-blue: oklch(0.65 0.07 240);       /* Azul pizarra (sobrio y profesional) */
+  --ely-pink: oklch(0.92 0.03 70);        /* Arena / Beige cálido (reemplaza al rosa chillón) */
+  --ely-mint: oklch(0.82 0.05 160);       /* Verde Sage / Sabio (relajante y clínico) */
+  --ely-lavender: oklch(0.88 0.02 240);   /* Gris azulado muy suave (reemplaza al morado) */
+  --ely-cream: oklch(0.985 0.008 90);     /* Crema suave para fondos */
 
-  --background: oklch(0.99 0.005 300);
-  --foreground: oklch(0.34 0.05 260);
+  --background: oklch(0.985 0.003 90);    /* Fondo color crema/hueso, más cálido que el blanco puro */
+  --foreground: oklch(0.28 0.03 240);     /* Texto gris oscuro pizarra (suave para la vista) */
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.34 0.05 260);
+  --card-foreground: oklch(0.28 0.03 240);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.34 0.05 260);
+  --popover-foreground: oklch(0.28 0.03 240);
 
-  --primary: oklch(0.72 0.11 250);
+  --primary: oklch(0.55 0.06 240);        /* Color principal: azul slate maduro */
   --primary-foreground: oklch(0.99 0.005 300);
 
-  --secondary: oklch(0.94 0.03 300);
-  --secondary-foreground: oklch(0.34 0.05 260);
+  --secondary: oklch(0.94 0.02 90);       /* Botones secundarios en crema/arena suave */
+  --secondary-foreground: oklch(0.28 0.03 240);
 
-  --muted: oklch(0.96 0.015 280);
-  --muted-foreground: oklch(0.52 0.04 260);
+  --muted: oklch(0.95 0.01 240);
+  --muted-foreground: oklch(0.50 0.02 240);
 
-  --accent: oklch(0.88 0.06 340);
-  --accent-foreground: oklch(0.34 0.05 260);
+  --accent: oklch(0.82 0.05 160);         /* Acentos visuales en verde sage */
+  --accent-foreground: oklch(0.28 0.03 240);
 
   --destructive: oklch(0.63 0.19 25);
   --destructive-foreground: oklch(0.99 0.005 300);
 
-  --border: oklch(0.92 0.02 290);
-  --input: oklch(0.94 0.02 290);
-  --ring: oklch(0.72 0.11 250);
+  --border: oklch(0.90 0.01 240);
+  --input: oklch(0.94 0.01 240);
+  --ring: oklch(0.55 0.06 240);
 
-  --gradient-hero: linear-gradient(135deg, var(--ely-blue) 0%, var(--ely-lavender) 50%, var(--ely-pink) 100%);
+  /* Gradientes rediseñados: transiciones suaves entre azul pizarra, gris y verde sage */
+  --gradient-hero: linear-gradient(135deg, var(--ely-blue) 0%, var(--ely-lavender) 50%, var(--ely-mint) 100%);
   --gradient-mint: linear-gradient(135deg, var(--ely-mint), var(--ely-blue));
   --gradient-warm: linear-gradient(135deg, var(--ely-pink), var(--ely-lavender));
-  --shadow-soft: 0 8px 32px -8px color-mix(in oklab, var(--primary) 25%, transparent);
-  --shadow-card: 0 4px 20px -6px color-mix(in oklab, var(--ely-lavender) 40%, transparent);
+  
+  --shadow-soft: 0 8px 32px -8px color-mix(in oklab, var(--primary) 15%, transparent);
+  --shadow-card: 0 4px 20px -6px color-mix(in oklab, var(--ely-blue) 15%, transparent);
 }
 
 .dark {
-  --background: oklch(0.20 0.03 265);
-  --foreground: oklch(0.96 0.01 280);
-  --card: oklch(0.25 0.03 265);
-  --card-foreground: oklch(0.96 0.01 280);
-  --popover: oklch(0.25 0.03 265);
-  --popover-foreground: oklch(0.96 0.01 280);
-  --primary: oklch(0.78 0.09 240);
-  --primary-foreground: oklch(0.20 0.03 265);
-  --secondary: oklch(0.30 0.04 265);
-  --secondary-foreground: oklch(0.96 0.01 280);
-  --muted: oklch(0.28 0.03 265);
-  --muted-foreground: oklch(0.72 0.03 280);
-  --accent: oklch(0.35 0.06 320);
-  --accent-foreground: oklch(0.96 0.01 280);
+  /* Modo oscuro adaptado a los nuevos tonos neutrales y descansados */
+  --background: oklch(0.20 0.02 240);     /* Fondo pizarra oscuro profundo, no negro puro */
+  --foreground: oklch(0.95 0.01 240);     /* Texto gris claro suave */
+  --card: oklch(0.24 0.02 240);
+  --card-foreground: oklch(0.95 0.01 240);
+  --popover: oklch(0.24 0.02 240);
+  --popover-foreground: oklch(0.95 0.01 240);
+  
+  --primary: oklch(0.65 0.05 240);        /* Azul pizarra más luminoso para contraste */
+  --primary-foreground: oklch(0.20 0.02 240);
+  
+  --secondary: oklch(0.28 0.02 240);
+  --secondary-foreground: oklch(0.95 0.01 240);
+  
+  --muted: oklch(0.26 0.02 240);
+  --muted-foreground: oklch(0.70 0.01 240);
+  
+  --accent: oklch(0.32 0.03 160);         /* Acento verde sage oscuro */
+  --accent-foreground: oklch(0.95 0.01 240);
+  
   --destructive: oklch(0.65 0.19 25);
   --destructive-foreground: oklch(0.99 0.005 300);
-  --border: oklch(0.35 0.03 265);
-  --input: oklch(0.35 0.03 265);
-  --ring: oklch(0.78 0.09 240);
+  
+  --border: oklch(0.30 0.02 240);
+  --input: oklch(0.30 0.02 240);
+  --ring: oklch(0.65 0.05 240);
 }
 
 @layer base {
@@ -112,9 +121,9 @@
     background: var(--background);
     color: var(--foreground);
     background-image:
-      radial-gradient(60% 40% at 10% 0%, color-mix(in oklab, var(--ely-blue) 25%, transparent) 0%, transparent 60%),
-      radial-gradient(50% 40% at 100% 20%, color-mix(in oklab, var(--ely-pink) 22%, transparent) 0%, transparent 60%),
-      radial-gradient(70% 50% at 50% 100%, color-mix(in oklab, var(--ely-mint) 18%, transparent) 0%, transparent 60%);
+      radial-gradient(60% 40% at 10% 0%, color-mix(in oklab, var(--ely-blue) 12%, transparent) 0%, transparent 60%),
+      radial-gradient(50% 40% at 100% 20%, color-mix(in oklab, var(--ely-pink) 15%, transparent) 0%, transparent 60%),
+      radial-gradient(70% 50% at 50% 100%, color-mix(in oklab, var(--ely-mint) 12%, transparent) 0%, transparent 60%);
     background-attachment: fixed;
   }
   h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.01em; }
