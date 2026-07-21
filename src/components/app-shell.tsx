@@ -3,7 +3,7 @@ import { LogoMark } from "@/components/brand";
 import { EmergencyButton } from "@/components/emergency-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
-import { Home, MessageCircle, Target, Gamepad2, BookOpen, Newspaper, User, Sparkles, PawPrint, BarChart3, Users, ClipboardList, Bell, LogOut, Globe } from "lucide-react";
+import { Home, MessageCircle, Target, Gamepad2, BookOpen, Newspaper, User, Sparkles, PawPrint, BarChart3, Users, ClipboardList, Bell, LogOut } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -76,9 +76,6 @@ export function AppShell({ children, admin = false }: { children?: ReactNode; ad
                 <span className="text-[11px] text-muted-foreground">Nivel {profile.level} · {profile.xp} XP</span>
               </div>
             )}
-            <a href="https://hey-ely-ears-to-you.lovable.app/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold hover:bg-secondary" title="Sitio web oficial de Hey Ely">
-              <Globe className="h-4 w-4" /> <span className="hidden sm:inline">Sitio Web</span>
-            </a>
             <button onClick={signOut} className="rounded-full border p-2 hover:bg-secondary" title="Salir">
               <LogOut className="h-4 w-4" />
             </button>

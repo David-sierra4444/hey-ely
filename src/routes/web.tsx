@@ -20,19 +20,10 @@ function WebLayout() {
             <Link to="/web/noticias">Noticias</Link>
             <Link to="/web/faq">FAQ</Link>
             <Link to="/web/contacto">Contacto</Link>
-            <a href="https://hey-ely-ears-to-you.lovable.app/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Sitio Web ↗</a>
           </nav>
           
-          {/* Zona derecha de botones (aquí agregamos el enlace para móviles) */}
+          {/* Zona derecha de botones */}
           <div className="flex items-center gap-4">
-            <a 
-              href="https://hey-ely-ears-to-you.lovable.app/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="md:hidden text-xs sm:text-sm text-primary font-semibold hover:underline"
-            >
-              Sitio Web ↗
-            </a>
             <Link to="/auth" className="rounded-full bg-primary px-4 py-2 text-primary-foreground text-sm font-bold">
               Entrar
             </Link>

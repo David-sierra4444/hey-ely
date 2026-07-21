@@ -20,7 +20,6 @@ import { Route as WebRecursosRouteImport } from './routes/web.recursos'
 import { Route as WebQueEsRouteImport } from './routes/web.que-es'
 import { Route as WebNoticiasRouteImport } from './routes/web.noticias'
 import { Route as WebInstitucionesRouteImport } from './routes/web.instituciones'
-import { Route as WebInicioRouteImport } from './routes/web.inicio'
 import { Route as WebFaqRouteImport } from './routes/web.faq'
 import { Route as WebFamiliasRouteImport } from './routes/web.familias'
 import { Route as WebContactoRouteImport } from './routes/web.contacto'
@@ -95,11 +94,6 @@ const WebNoticiasRoute = WebNoticiasRouteImport.update({
 const WebInstitucionesRoute = WebInstitucionesRouteImport.update({
   id: '/instituciones',
   path: '/instituciones',
-  getParentRoute: () => WebRoute,
-} as any)
-const WebInicioRoute = WebInicioRouteImport.update({
-  id: '/inicio',
-  path: '/inicio',
   getParentRoute: () => WebRoute,
 } as any)
 const WebFaqRoute = WebFaqRouteImport.update({
@@ -225,7 +219,6 @@ export interface FileRoutesByFullPath {
   '/web/contacto': typeof WebContactoRoute
   '/web/familias': typeof WebFamiliasRoute
   '/web/faq': typeof WebFaqRoute
-  '/web/inicio': typeof WebInicioRoute
   '/web/instituciones': typeof WebInstitucionesRoute
   '/web/noticias': typeof WebNoticiasRoute
   '/web/que-es': typeof WebQueEsRoute
@@ -256,7 +249,6 @@ export interface FileRoutesByTo {
   '/web/contacto': typeof WebContactoRoute
   '/web/familias': typeof WebFamiliasRoute
   '/web/faq': typeof WebFaqRoute
-  '/web/inicio': typeof WebInicioRoute
   '/web/instituciones': typeof WebInstitucionesRoute
   '/web/noticias': typeof WebNoticiasRoute
   '/web/que-es': typeof WebQueEsRoute
@@ -291,7 +283,6 @@ export interface FileRoutesById {
   '/web/contacto': typeof WebContactoRoute
   '/web/familias': typeof WebFamiliasRoute
   '/web/faq': typeof WebFaqRoute
-  '/web/inicio': typeof WebInicioRoute
   '/web/instituciones': typeof WebInstitucionesRoute
   '/web/noticias': typeof WebNoticiasRoute
   '/web/que-es': typeof WebQueEsRoute
@@ -327,7 +318,6 @@ export interface FileRouteTypes {
     | '/web/contacto'
     | '/web/familias'
     | '/web/faq'
-    | '/web/inicio'
     | '/web/instituciones'
     | '/web/noticias'
     | '/web/que-es'
@@ -358,7 +348,6 @@ export interface FileRouteTypes {
     | '/web/contacto'
     | '/web/familias'
     | '/web/faq'
-    | '/web/inicio'
     | '/web/instituciones'
     | '/web/noticias'
     | '/web/que-es'
@@ -392,7 +381,6 @@ export interface FileRouteTypes {
     | '/web/contacto'
     | '/web/familias'
     | '/web/faq'
-    | '/web/inicio'
     | '/web/instituciones'
     | '/web/noticias'
     | '/web/que-es'
@@ -491,13 +479,6 @@ declare module '@tanstack/react-router' {
       path: '/instituciones'
       fullPath: '/web/instituciones'
       preLoaderRoute: typeof WebInstitucionesRouteImport
-      parentRoute: typeof WebRoute
-    }
-    '/web/inicio': {
-      id: '/web/inicio'
-      path: '/inicio'
-      fullPath: '/web/inicio'
-      preLoaderRoute: typeof WebInicioRouteImport
       parentRoute: typeof WebRoute
     }
     '/web/faq': {
@@ -709,7 +690,6 @@ interface WebRouteChildren {
   WebContactoRoute: typeof WebContactoRoute
   WebFamiliasRoute: typeof WebFamiliasRoute
   WebFaqRoute: typeof WebFaqRoute
-  WebInicioRoute: typeof WebInicioRoute
   WebInstitucionesRoute: typeof WebInstitucionesRoute
   WebNoticiasRoute: typeof WebNoticiasRoute
   WebQueEsRoute: typeof WebQueEsRoute
@@ -720,7 +700,6 @@ const WebRouteChildren: WebRouteChildren = {
   WebContactoRoute: WebContactoRoute,
   WebFamiliasRoute: WebFamiliasRoute,
   WebFaqRoute: WebFaqRoute,
-  WebInicioRoute: WebInicioRoute,
   WebInstitucionesRoute: WebInstitucionesRoute,
   WebNoticiasRoute: WebNoticiasRoute,
   WebQueEsRoute: WebQueEsRoute,

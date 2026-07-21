@@ -8,9 +8,9 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { App as CapacitorApp } from "@capacitor/app";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -23,7 +23,10 @@ function NotFoundComponent() {
         <p className="mt-2 text-sm text-muted-foreground">
           Ely está buscándola por ti. Mientras tanto, vuelve al inicio.
         </p>
-        <Link to="/" className="mt-6 inline-flex rounded-full bg-primary px-6 py-3 text-primary-foreground font-semibold shadow-soft hover:opacity-90 transition">
+        <Link
+          to="/"
+          className="mt-6 inline-flex rounded-full bg-primary px-6 py-3 text-primary-foreground font-semibold shadow-soft hover:opacity-90 transition"
+        >
           Volver al inicio
         </Link>
       </div>
@@ -34,9 +37,7 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
+
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="card-soft max-w-md text-center p-10">
@@ -46,12 +47,17 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
-            onClick={() => { router.invalidate(); reset(); }}
+            onClick={() => {
+              router.invalidate();
+              reset();
+            }}
             className="rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft"
           >
             Reintentar
           </button>
-          <a href="/" className="rounded-full border bg-background px-5 py-2.5 text-sm font-semibold">Inicio</a>
+          <a href="/" className="rounded-full border bg-background px-5 py-2.5 text-sm font-semibold">
+            Inicio
+          </a>
         </div>
       </div>
     </div>
@@ -64,10 +70,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Hey Ely — Bienestar emocional para adolescentes" },
-      { name: "description", content: "Hey Ely es la plataforma de bienestar emocional que acompaña a adolescentes, familias e instituciones educativas con IA empática, actividades, recursos y prevención." },
+      {
+        name: "description",
+        content:
+          "Hey Ely es la plataforma de bienestar emocional que acompaña a adolescentes, familias e instituciones educativas con IA empática, actividades, recursos y prevención.",
+      },
       { name: "theme-color", content: "#b8c6ee" },
       { property: "og:title", content: "Hey Ely — Bienestar emocional" },
-      { property: "og:description", content: "IA empática, actividades y recursos para el bienestar emocional de adolescentes." },
+      {
+        property: "og:description",
+        content: "IA empática, actividades y recursos para el bienestar emocional de adolescentes.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -76,7 +89,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@500;600;700&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Quicksand:wght@500;600;700&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -88,7 +104,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="es">
-      <head><HeadContent /></head>
+      <head>
+        <HeadContent />
+      </head>
       <body>
         {children}
         <Scripts />
@@ -101,6 +119,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
+  // 1. Escuchar cambios de autenticación de Supabase
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
@@ -110,6 +129,21 @@ function RootComponent() {
     });
     return () => sub.subscription.unsubscribe();
   }, [router, queryClient]);
+
+  // 2. Escuchar el botón atrás físico/gesto del celular (Capacitor)
+  useEffect(() => {
+    const backButtonListener = CapacitorApp.addListener("backButton", () => {
+      if (window.history.length > 1) {
+        router.history.back();
+      } else {
+        CapacitorApp.minimizeApp();
+      }
+    });
+
+    return () => {
+      backButtonListener.then((handler) => handler.remove());
+    };
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>

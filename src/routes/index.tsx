@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LogoMark, ElyMascot } from "@/components/brand";
-import { Heart, Shield, GraduationCap, Sparkles } from "lucide-react";
+import { Heart, Shield, GraduationCap } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -27,21 +27,10 @@ function Landing() {
             <Link to="/web/familias" className="hover:text-primary">Familias</Link>
             <Link to="/web/faq" className="hover:text-primary">FAQ</Link>
             <Link to="/web/contacto" className="hover:text-primary">Contacto</Link>
-            <a href="https://hey-ely-ears-to-you.lovable.app/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
-              <Sparkles className="h-3.5 w-3.5" /> Sitio Web
-            </a>
           </nav>
           
           {/* Zona derecha de botones */}
           <div className="flex items-center gap-4">
-            <a 
-              href="https://hey-ely-ears-to-you.lovable.app/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="md:hidden flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
-            >
-              <Sparkles className="h-3.5 w-3.5" /> Sitio Web
-            </a>
             <Link to="/auth" className="rounded-full bg-primary px-4 py-1.5 text-xs sm:text-sm text-primary-foreground font-semibold shadow-soft">
               Entrar
             </Link>
