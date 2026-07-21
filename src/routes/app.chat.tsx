@@ -26,14 +26,17 @@ function ChatPage() {
       .eq("user_id", user.id)
       .order("created_at")
       .then(({ data }) => {
-        if (data && data.length) setMessages(data as Msg[]);
-        else if (profile)
+        if (data && data.length) {
+          setMessages(data as Msg[]);
+        } else {
+          const firstName = profile?.full_name ? profile.full_name.split(" ")[0] : "amigo/a";
           setMessages([
             {
               role: "assistant",
-              content: `Hola, ${profile.full_name.split(" ")[0]} 👋 Qué bueno verte. ¿Cómo te sientes hoy?`,
+              content: `Hola, ${firstName} 👋 Qué bueno verte. ¿Cómo te sientes hoy?`,
             },
           ]);
+        }
       });
   }, [user, profile]);
 
@@ -46,41 +49,64 @@ function ChatPage() {
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
-    if (!input.trim() || !user || !profile) return;
+    if (!input.trim()) return;
+
+    if (!user) {
+      toast.error("Debes iniciar sesión para chatear.");
+      return;
+    }
+
     const userMsg: Msg = { role: "user", content: input.trim() };
     const next = [...messages, userMsg];
     setMessages(next);
     setInput("");
     setSending(true);
+
+    // 1. Guardar mensaje del usuario en Supabase
     await supabase
       .from("chat_messages")
       .insert({ user_id: user.id, role: "user", content: userMsg.content });
 
     try {
+      console.log("🚀 Enviando mensaje a /api/chat...", {
+        userId: user.id,
+        institutionId: profile?.institution_id,
+      });
+
+      // 2. Consultar API backend para respuesta e inspección de riesgo
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: next,
-          userName: profile.full_name.split(" ")[0],
+          userName: profile?.full_name ? profile.full_name.split(" ")[0] : "Estudiante",
           userId: user.id,
-          institutionId: profile.institution_id || (profile as any).institutionId || null, // 👈 Se envía el id de la institución
+          institutionId: profile?.institution_id || (profile as any)?.institutionId || null,
         }),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error");
+      console.log("📥 Respuesta recibida del servidor:", data);
+
+      if (!res.ok) throw new Error(data.error || "Error al procesar el mensaje");
+
       const reply: Msg = { role: "assistant", content: data.reply };
       setMessages((m) => [...m, reply]);
+
+      // 3. Guardar respuesta del asistente
       await supabase
         .from("chat_messages")
         .insert({ user_id: user.id, role: "assistant", content: reply.content });
 
-      if (data.riskDetected)
+      // 4. Si la IA detectó un riesgo, mostrar notificación
+      if (data.riskDetected) {
         toast.warning(
           "Ely detectó una situación importante. Recuerda que puedes usar el botón de emergencia si lo necesitas."
         );
+      }
     } catch (err: any) {
-      toast.error(err.message);
+      console.error("❌ Error en el flujo del chat:", err);
+      toast.error(err.message || "Error al conectar con Ely");
       setMessages((m) => [
         ...m,
         {
