@@ -20,38 +20,77 @@ function ChatPage() {
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("chat_messages").select("role,content").eq("user_id", user.id).order("created_at").then(({ data }) => {
-      if (data && data.length) setMessages(data as Msg[]);
-      else if (profile) setMessages([{ role: "assistant", content: `Hola, ${profile.full_name.split(" ")[0]} 👋 Qué bueno verte. ¿Cómo te sientes hoy?` }]);
-    });
+    supabase
+      .from("chat_messages")
+      .select("role,content")
+      .eq("user_id", user.id)
+      .order("created_at")
+      .then(({ data }) => {
+        if (data && data.length) setMessages(data as Msg[]);
+        else if (profile)
+          setMessages([
+            {
+              role: "assistant",
+              content: `Hola, ${profile.full_name.split(" ")[0]} 👋 Qué bueno verte. ¿Cómo te sientes hoy?`,
+            },
+          ]);
+      });
   }, [user, profile]);
 
-  useEffect(() => { listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" }); }, [messages]);
+  useEffect(() => {
+    listRef.current?.scrollTo({
+      top: listRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages]);
 
   async function send(e: React.FormEvent) {
     e.preventDefault();
     if (!input.trim() || !user || !profile) return;
     const userMsg: Msg = { role: "user", content: input.trim() };
     const next = [...messages, userMsg];
-    setMessages(next); setInput(""); setSending(true);
-    await supabase.from("chat_messages").insert({ user_id: user.id, role: "user", content: userMsg.content });
+    setMessages(next);
+    setInput("");
+    setSending(true);
+    await supabase
+      .from("chat_messages")
+      .insert({ user_id: user.id, role: "user", content: userMsg.content });
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next, userName: profile.full_name.split(" ")[0], userId: user.id }),
+        body: JSON.stringify({
+          messages: next,
+          userName: profile.full_name.split(" ")[0],
+          userId: user.id,
+          institutionId: profile.institution_id || (profile as any).institutionId || null, // 👈 Se envía el id de la institución
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Error");
       const reply: Msg = { role: "assistant", content: data.reply };
       setMessages((m) => [...m, reply]);
-      await supabase.from("chat_messages").insert({ user_id: user.id, role: "assistant", content: reply.content });
-      if (data.riskDetected) toast.warning("Ely detectó una situación importante. Recuerda que puedes usar el botón de emergencia si lo necesitas.");
+      await supabase
+        .from("chat_messages")
+        .insert({ user_id: user.id, role: "assistant", content: reply.content });
+
+      if (data.riskDetected)
+        toast.warning(
+          "Ely detectó una situación importante. Recuerda que puedes usar el botón de emergencia si lo necesitas."
+        );
     } catch (err: any) {
       toast.error(err.message);
-      setMessages((m) => [...m, { role: "assistant", content: "Perdona, tuve un problema para responder. ¿Intentamos de nuevo?" }]);
-    } finally { setSending(false); }
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: "Perdona, tuve un problema para responder. ¿Intentamos de nuevo?",
+        },
+      ]);
+    } finally {
+      setSending(false);
+    }
   }
 
   return (
@@ -60,18 +99,27 @@ function ChatPage() {
         <ElyMascot className="w-16 h-16" />
         <div>
           <div className="font-extrabold">Chat con Ely</div>
-          <div className="text-xs text-muted-foreground flex items-center gap-1"><AlertCircle className="h-3 w-3" /> Conversación 100% privada.</div>
+          <div className="text-xs text-muted-foreground flex items-center gap-1">
+            <AlertCircle className="h-3 w-3" /> Conversación 100% privada.
+          </div>
         </div>
       </div>
 
       <div ref={listRef} className="mt-4 h-[55vh] overflow-auto space-y-4 pr-1">
         {messages.map((m, i) => (
-          <div key={i} className={`animate-pop flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line space-y-2 ${
-              m.role === "user" 
-                ? "gradient-hero text-white rounded-br-none" 
-                : "card-soft bg-slate-50 text-slate-800 rounded-bl-none border border-slate-100 shadow-sm"
-            }`}>
+          <div
+            key={i}
+            className={`animate-pop flex ${
+              m.role === "user" ? "justify-end" : "justify-start"
+            }`}
+          >
+            <div
+              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line space-y-2 ${
+                m.role === "user"
+                  ? "gradient-hero text-white rounded-br-none"
+                  : "card-soft bg-slate-50 text-slate-800 rounded-bl-none border border-slate-100 shadow-sm"
+              }`}
+            >
               {m.content}
             </div>
           </div>
@@ -86,8 +134,17 @@ function ChatPage() {
       </div>
 
       <form onSubmit={send} className="mt-4 flex gap-2">
-        <input autoFocus value={input} onChange={(e) => setInput(e.target.value)} placeholder="Escríbele a Ely..." className="flex-1 rounded-full border px-4 py-3 shadow-inner focus:outline-none focus:ring-2 focus:ring-primary/20" />
-        <button disabled={sending || !input.trim()} className="rounded-full bg-primary text-primary-foreground px-5 font-bold disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center justify-center">
+        <input
+          autoFocus
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Escríbele a Ely..."
+          className="flex-1 rounded-full border px-4 py-3 shadow-inner focus:outline-none focus:ring-2 focus:ring-primary/20"
+        />
+        <button
+          disabled={sending || !input.trim()}
+          className="rounded-full bg-primary text-primary-foreground px-5 font-bold disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center justify-center"
+        >
           <Send className="h-4 w-4" />
         </button>
       </form>

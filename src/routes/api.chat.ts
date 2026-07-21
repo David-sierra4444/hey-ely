@@ -23,8 +23,12 @@ export const Route = createFileRoute('/api/chat')({
             );
           }
 
-          // Obtenemos los mensajes enviados por el cliente
-          const { messages } = await request.json() as { messages: Array<{ role: string; content: string }> };
+          // Obtenemos los mensajes y la información del usuario enviado por el cliente
+          const { messages, userId, institutionId } = await request.json() as { 
+            messages: Array<{ role: string; content: string }>;
+            userId?: string;
+            institutionId?: string;
+          };
 
           if (!messages || !Array.isArray(messages)) {
             return Response.json(
@@ -36,26 +40,11 @@ export const Route = createFileRoute('/api/chat')({
           const lastUserMessage = messages[messages.length - 1]?.content || "";
 
           // ==========================================
-          // DETECTOR DE RIESGO E INTEGRIDAD
+          // 1. DETECTOR DE RIESGOS TÉCNICOS / CIBERSEGURIDAD
           // ==========================================
-          const isRiskDetected = detectSecurityRisks(lastUserMessage);
+          const isSecurityRisk = detectSecurityRisks(lastUserMessage);
           
-          if (isRiskDetected) {
-            if (supabase) {
-              supabase
-                .from('security_alerts')
-                .insert([
-                  { 
-                    trigger_message: lastUserMessage.slice(0, 500), 
-                    severity: 'high', 
-                    metadata: { source: 'api.chat.ts', checked_at: new Date().toISOString() } 
-                  }
-                ])
-                .then(({ error }) => {
-                  if (error) console.error("Error guardando alerta en Supabase:", error.message);
-                });
-            }
-
+          if (isSecurityRisk) {
             return Response.json({
               reply: "Oye, entiendo que estés explorando, pero por motivos de seguridad no puedo ayudarte con peticiones relacionadas con vulnerabilidades.",
               text: "Oye, entiendo que estés explorando, pero por motivos de seguridad no puedo ayudarte con peticiones relacionadas con vulnerabilidades.",
@@ -64,7 +53,30 @@ export const Route = createFileRoute('/api/chat')({
           }
 
           // ==========================================
-          // PERSONALIDAD MEJORADA: DINÁMICA, NATURAL Y CREADORA DE VARIABILIDAD
+          // 2. DETECTOR DE RIESGO EMOCIONAL (ALERTAS A DIRECTIVOS)
+          // ==========================================
+          const emotionalRisk = detectEmotionalRisk(lastUserMessage);
+
+          if (emotionalRisk.isRisk && supabase) {
+            supabase
+              .from('alerts')
+              .insert([
+                { 
+                  student_user_id: userId || null,
+                  institution_id: institutionId || null,
+                  risk_level: emotionalRisk.level,
+                  category: emotionalRisk.category,
+                  status: 'pending',
+                  notes: `Mensaje detectado: "${lastUserMessage.slice(0, 300)}"`
+                }
+              ])
+              .then(({ error }) => {
+                if (error) console.error("[Hey Ely] Error guardando alerta en Supabase:", error.message);
+              });
+          }
+
+          // ==========================================
+          // PERSONALIDAD MEJORADA
           // ==========================================
           const systemContext = 
             "Eres Ely (Hey Ely), una brújula emocional y asistente de apoyo.\n\n" +
@@ -75,11 +87,11 @@ export const Route = createFileRoute('/api/chat')({
             "2. Sin rodeos ni etiquetas: Habla de forma directa. No uses subtítulos robóticos como '**Solución**:' o '**Ejercicios**:'. Integra todo de forma fluida y natural.\n" +
             "3. Enfoque práctico: Prioriza dar herramientas claras y aterrizadas para que el usuario recupere el control de su mente y cuerpo. Si planteas ejercicios físicos o de respiración, muéstralos en listas numeradas sencillas.\n" +
             "4. Variabilidad de estructura (Evita la monotonía): No estructures todas tus respuestas igual. Cambia la forma en que inicias la conversación (no repitas siempre el mismo saludo). Varía la longitud de tus párrafos: combina ideas cortas con explicaciones un poco más detalladas de manera orgánica. Usa el doble salto de línea para mantener el texto limpio y legible.\n" +
-            "5. Comunicación precisa y espontánea: Habla como lo haría un ser humano inteligente, adaptándote de verdad al flujo del usuario. No hagas cuestionarios interminables. Máximo una pregunta muy puntual al final que ayude a la persona a enfocar su pensamiento o desahogarse de forma concreta.\n" +
+            "5. Comunicación precisa y spontaneous: Habla como lo haría un ser humano inteligente, adaptándote de verdad al flujo del usuario. No hagas cuestionarios interminables. Máximo una pregunta muy puntual al final que ayude a la persona a enfocar su pensamiento o desahogarse de forma concreta.\n" +
             "6. Idioma: Responde siempre en español, manteniendo un tono sobrio, maduro, empático pero con los pies firmes sobre la tierra.";
 
           // ==========================================
-          // RECORTE DEL HISTORIAL (Evita que el chat se congestione y el error de tokens)
+          // RECORTE DEL HISTORIAL
           // ==========================================
           const limitedMessages = messages.slice(-6); 
           
@@ -106,9 +118,9 @@ export const Route = createFileRoute('/api/chat')({
             body: JSON.stringify({
               model: "llama-3.1-8b-instant",
               messages: formattedMessages,
-              temperature: 0.8,         // Ajustado a 0.8: Aporta espontaneidad y naturalidad evitando respuestas mecánicas.
-              presence_penalty: 0.4,    // Fomenta que el modelo hable de nuevos temas en lugar de dar vueltas sobre lo mismo.
-              frequency_penalty: 0.4,   // Penaliza activamente la repetición literal de palabras o muletillas repetitivas.
+              temperature: 0.8,
+              presence_penalty: 0.4,
+              frequency_penalty: 0.4,
               max_tokens: 1024
             })
           });
@@ -150,6 +162,7 @@ export const Route = createFileRoute('/api/chat')({
   }
 });
 
+// Detector de riesgos técnicos
 function detectSecurityRisks(text: string): boolean {
   const riskPatterns = [
     /bypass sandbox/i,
@@ -161,6 +174,21 @@ function detectSecurityRisks(text: string): boolean {
     /read system files/i
   ];
   return riskPatterns.some(pattern => pattern.test(text));
+}
+
+// Detector de riesgo emocional para alertas a directivos
+function detectEmotionalRisk(text: string): { isRisk: boolean; level: string; category: string } {
+  const textLower = text.toLowerCase();
+
+  if (/suicid|matarm|quitarme la vida|no quiero vivir|cortarm|no aguanto mas/i.test(textLower)) {
+    return { isRisk: true, level: 'critical', category: 'self_harm' };
+  }
+
+  if (/me pegan|me maltratan|abuso|tengo mucho miedo|ataque de panico|crisis/i.test(textLower)) {
+    return { isRisk: true, level: 'high', category: 'crisis' };
+  }
+
+  return { isRisk: false, level: 'low', category: 'none' };
 }
 
 interface GroqResponse {
