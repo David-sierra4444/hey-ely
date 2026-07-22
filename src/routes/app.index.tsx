@@ -13,7 +13,8 @@ import {
   CheckCircle2, 
   ArrowRight,
   Dog,
-  User
+  User,
+  FileText // 👈 Icono importado para las encuestas
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/")({ component: Home });
@@ -102,6 +103,7 @@ function Home() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           <QuickCard to="/app/chat" icon={MessageCircle} title="Hablar con Ely" desc="Estoy aquí para escucharte" color="from-purple-500 to-indigo-600" />
           <QuickCard to="/app/misiones" icon={Target} title="Misiones" desc="Suma XP hoy" color="from-emerald-500 to-teal-600" />
+          <QuickCard to="/app/encuestas" icon={FileText} title="Encuestas" desc="Queremos saber cómo estás" color="from-teal-500 to-emerald-600" /> {/* 👈 Tarjeta agregada */}
           <QuickCard to="/app/juegos" icon={Gamepad2} title="Jugar" desc="Aprende jugando" color="from-blue-500 to-cyan-600" />
           <QuickCard to="/app/mascota" icon={Dog} title="Mascota" desc="Cuida de tu compañero" color="from-amber-500 to-orange-500" />
           <QuickCard to="/app/recursos" icon={BookOpen} title="Recursos" desc="Herramientas de apoyo" color="from-yellow-500 to-amber-600" />
