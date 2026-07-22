@@ -6,6 +6,11 @@ const games = [
   { key: "memorama", title: "Memorama de emociones", desc: "Encuentra las parejas de emociones.", emoji: "🎴", xp: 30 },
   { key: "respira", title: "Respiración guiada", desc: "4-7-8: inhala, sostén, exhala.", emoji: "🌬️", xp: 20 },
   { key: "trivia", title: "Trivia de bienestar", desc: "Preguntas sobre emociones y hábitos.", emoji: "🧠", xp: 25 },
+  { key: "cazadores", title: "Cazador de Calma", desc: "Revienta las burbujas de estrés a toda velocidad.", emoji: "🎈", xp: 30 },
+  { key: "semaforo", title: "Semáforo Emocional", desc: "Clasifica situaciones según la intensidad.", emoji: "🚦", xp: 30 },
+  { key: "escudo", title: "Escudo de Afirmaciones", desc: "Separa los pensamientos sanadores de los nocivos.", emoji: "🛡️", xp: 30 },
+  { key: "conexion", title: "Conexión Segura", desc: "Resuelve dilemas sociales aplicando empatía.", emoji: "🤝", xp: 30 },
+  { key: "gratitud", title: "Círculo de Gratitud", desc: "Reflexiona sobre los pequeños detalles positivos del día.", emoji: "🌟", xp: 30 },
 ];
 
 function GamesIndex() {

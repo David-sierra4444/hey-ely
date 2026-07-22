@@ -9,23 +9,14 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as WebRouteImport } from './routes/web'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
-import { Route as WebRecursosRouteImport } from './routes/web.recursos'
-import { Route as WebQueEsRouteImport } from './routes/web.que-es'
-import { Route as WebNoticiasRouteImport } from './routes/web.noticias'
-import { Route as WebInstitucionesRouteImport } from './routes/web.instituciones'
-import { Route as WebFaqRouteImport } from './routes/web.faq'
-import { Route as WebFamiliasRouteImport } from './routes/web.familias'
-import { Route as WebContactoRouteImport } from './routes/web.contacto'
 import { Route as AppRecursosRouteImport } from './routes/app.recursos'
 import { Route as AppPerfilRouteImport } from './routes/app.perfil'
-import { Route as AppNoticiasRouteImport } from './routes/app.noticias'
 import { Route as AppMisionesRouteImport } from './routes/app.misiones'
 import { Route as AppMascotaRouteImport } from './routes/app.mascota'
 import { Route as AppJuegosRouteImport } from './routes/app.juegos'
@@ -38,14 +29,14 @@ import { Route as AdminEncuestasRouteImport } from './routes/admin.encuestas'
 import { Route as AdminAlertasRouteImport } from './routes/admin.alertas'
 import { Route as AppJuegosIndexRouteImport } from './routes/app.juegos.index'
 import { Route as AppJuegosTriviaRouteImport } from './routes/app.juegos.trivia'
+import { Route as AppJuegosSemaforoRouteImport } from './routes/app.juegos.semaforo'
 import { Route as AppJuegosRespiraRouteImport } from './routes/app.juegos.respira'
 import { Route as AppJuegosMemoramaRouteImport } from './routes/app.juegos.memorama'
+import { Route as AppJuegosGratitudRouteImport } from './routes/app.juegos.gratitud'
+import { Route as AppJuegosEscudoRouteImport } from './routes/app.juegos.escudo'
+import { Route as AppJuegosConexionRouteImport } from './routes/app.juegos.conexion'
+import { Route as AppJuegosCazadoresRouteImport } from './routes/app.juegos.cazadores'
 
-const WebRoute = WebRouteImport.update({
-  id: '/web',
-  path: '/web',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -76,41 +67,6 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
-const WebRecursosRoute = WebRecursosRouteImport.update({
-  id: '/recursos',
-  path: '/recursos',
-  getParentRoute: () => WebRoute,
-} as any)
-const WebQueEsRoute = WebQueEsRouteImport.update({
-  id: '/que-es',
-  path: '/que-es',
-  getParentRoute: () => WebRoute,
-} as any)
-const WebNoticiasRoute = WebNoticiasRouteImport.update({
-  id: '/noticias',
-  path: '/noticias',
-  getParentRoute: () => WebRoute,
-} as any)
-const WebInstitucionesRoute = WebInstitucionesRouteImport.update({
-  id: '/instituciones',
-  path: '/instituciones',
-  getParentRoute: () => WebRoute,
-} as any)
-const WebFaqRoute = WebFaqRouteImport.update({
-  id: '/faq',
-  path: '/faq',
-  getParentRoute: () => WebRoute,
-} as any)
-const WebFamiliasRoute = WebFamiliasRouteImport.update({
-  id: '/familias',
-  path: '/familias',
-  getParentRoute: () => WebRoute,
-} as any)
-const WebContactoRoute = WebContactoRouteImport.update({
-  id: '/contacto',
-  path: '/contacto',
-  getParentRoute: () => WebRoute,
-} as any)
 const AppRecursosRoute = AppRecursosRouteImport.update({
   id: '/recursos',
   path: '/recursos',
@@ -119,11 +75,6 @@ const AppRecursosRoute = AppRecursosRouteImport.update({
 const AppPerfilRoute = AppPerfilRouteImport.update({
   id: '/perfil',
   path: '/perfil',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppNoticiasRoute = AppNoticiasRouteImport.update({
-  id: '/noticias',
-  path: '/noticias',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMisionesRoute = AppMisionesRouteImport.update({
@@ -186,6 +137,11 @@ const AppJuegosTriviaRoute = AppJuegosTriviaRouteImport.update({
   path: '/trivia',
   getParentRoute: () => AppJuegosRoute,
 } as any)
+const AppJuegosSemaforoRoute = AppJuegosSemaforoRouteImport.update({
+  id: '/semaforo',
+  path: '/semaforo',
+  getParentRoute: () => AppJuegosRoute,
+} as any)
 const AppJuegosRespiraRoute = AppJuegosRespiraRouteImport.update({
   id: '/respira',
   path: '/respira',
@@ -196,13 +152,32 @@ const AppJuegosMemoramaRoute = AppJuegosMemoramaRouteImport.update({
   path: '/memorama',
   getParentRoute: () => AppJuegosRoute,
 } as any)
+const AppJuegosGratitudRoute = AppJuegosGratitudRouteImport.update({
+  id: '/gratitud',
+  path: '/gratitud',
+  getParentRoute: () => AppJuegosRoute,
+} as any)
+const AppJuegosEscudoRoute = AppJuegosEscudoRouteImport.update({
+  id: '/escudo',
+  path: '/escudo',
+  getParentRoute: () => AppJuegosRoute,
+} as any)
+const AppJuegosConexionRoute = AppJuegosConexionRouteImport.update({
+  id: '/conexion',
+  path: '/conexion',
+  getParentRoute: () => AppJuegosRoute,
+} as any)
+const AppJuegosCazadoresRoute = AppJuegosCazadoresRouteImport.update({
+  id: '/cazadores',
+  path: '/cazadores',
+  getParentRoute: () => AppJuegosRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
-  '/web': typeof WebRouteWithChildren
   '/admin/alertas': typeof AdminAlertasRoute
   '/admin/encuestas': typeof AdminEncuestasRoute
   '/admin/estudiantes': typeof AdminEstudiantesRoute
@@ -213,27 +188,23 @@ export interface FileRoutesByFullPath {
   '/app/juegos': typeof AppJuegosRouteWithChildren
   '/app/mascota': typeof AppMascotaRoute
   '/app/misiones': typeof AppMisionesRoute
-  '/app/noticias': typeof AppNoticiasRoute
   '/app/perfil': typeof AppPerfilRoute
   '/app/recursos': typeof AppRecursosRoute
-  '/web/contacto': typeof WebContactoRoute
-  '/web/familias': typeof WebFamiliasRoute
-  '/web/faq': typeof WebFaqRoute
-  '/web/instituciones': typeof WebInstitucionesRoute
-  '/web/noticias': typeof WebNoticiasRoute
-  '/web/que-es': typeof WebQueEsRoute
-  '/web/recursos': typeof WebRecursosRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
+  '/app/juegos/cazadores': typeof AppJuegosCazadoresRoute
+  '/app/juegos/conexion': typeof AppJuegosConexionRoute
+  '/app/juegos/escudo': typeof AppJuegosEscudoRoute
+  '/app/juegos/gratitud': typeof AppJuegosGratitudRoute
   '/app/juegos/memorama': typeof AppJuegosMemoramaRoute
   '/app/juegos/respira': typeof AppJuegosRespiraRoute
+  '/app/juegos/semaforo': typeof AppJuegosSemaforoRoute
   '/app/juegos/trivia': typeof AppJuegosTriviaRoute
   '/app/juegos/': typeof AppJuegosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/web': typeof WebRouteWithChildren
   '/admin/alertas': typeof AdminAlertasRoute
   '/admin/encuestas': typeof AdminEncuestasRoute
   '/admin/estudiantes': typeof AdminEstudiantesRoute
@@ -243,20 +214,17 @@ export interface FileRoutesByTo {
   '/app/chat': typeof AppChatRoute
   '/app/mascota': typeof AppMascotaRoute
   '/app/misiones': typeof AppMisionesRoute
-  '/app/noticias': typeof AppNoticiasRoute
   '/app/perfil': typeof AppPerfilRoute
   '/app/recursos': typeof AppRecursosRoute
-  '/web/contacto': typeof WebContactoRoute
-  '/web/familias': typeof WebFamiliasRoute
-  '/web/faq': typeof WebFaqRoute
-  '/web/instituciones': typeof WebInstitucionesRoute
-  '/web/noticias': typeof WebNoticiasRoute
-  '/web/que-es': typeof WebQueEsRoute
-  '/web/recursos': typeof WebRecursosRoute
   '/admin': typeof AdminIndexRoute
   '/app': typeof AppIndexRoute
+  '/app/juegos/cazadores': typeof AppJuegosCazadoresRoute
+  '/app/juegos/conexion': typeof AppJuegosConexionRoute
+  '/app/juegos/escudo': typeof AppJuegosEscudoRoute
+  '/app/juegos/gratitud': typeof AppJuegosGratitudRoute
   '/app/juegos/memorama': typeof AppJuegosMemoramaRoute
   '/app/juegos/respira': typeof AppJuegosRespiraRoute
+  '/app/juegos/semaforo': typeof AppJuegosSemaforoRoute
   '/app/juegos/trivia': typeof AppJuegosTriviaRoute
   '/app/juegos': typeof AppJuegosIndexRoute
 }
@@ -266,7 +234,6 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
-  '/web': typeof WebRouteWithChildren
   '/admin/alertas': typeof AdminAlertasRoute
   '/admin/encuestas': typeof AdminEncuestasRoute
   '/admin/estudiantes': typeof AdminEstudiantesRoute
@@ -277,20 +244,17 @@ export interface FileRoutesById {
   '/app/juegos': typeof AppJuegosRouteWithChildren
   '/app/mascota': typeof AppMascotaRoute
   '/app/misiones': typeof AppMisionesRoute
-  '/app/noticias': typeof AppNoticiasRoute
   '/app/perfil': typeof AppPerfilRoute
   '/app/recursos': typeof AppRecursosRoute
-  '/web/contacto': typeof WebContactoRoute
-  '/web/familias': typeof WebFamiliasRoute
-  '/web/faq': typeof WebFaqRoute
-  '/web/instituciones': typeof WebInstitucionesRoute
-  '/web/noticias': typeof WebNoticiasRoute
-  '/web/que-es': typeof WebQueEsRoute
-  '/web/recursos': typeof WebRecursosRoute
   '/admin/': typeof AdminIndexRoute
   '/app/': typeof AppIndexRoute
+  '/app/juegos/cazadores': typeof AppJuegosCazadoresRoute
+  '/app/juegos/conexion': typeof AppJuegosConexionRoute
+  '/app/juegos/escudo': typeof AppJuegosEscudoRoute
+  '/app/juegos/gratitud': typeof AppJuegosGratitudRoute
   '/app/juegos/memorama': typeof AppJuegosMemoramaRoute
   '/app/juegos/respira': typeof AppJuegosRespiraRoute
+  '/app/juegos/semaforo': typeof AppJuegosSemaforoRoute
   '/app/juegos/trivia': typeof AppJuegosTriviaRoute
   '/app/juegos/': typeof AppJuegosIndexRoute
 }
@@ -301,7 +265,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/auth'
-    | '/web'
     | '/admin/alertas'
     | '/admin/encuestas'
     | '/admin/estudiantes'
@@ -312,27 +275,23 @@ export interface FileRouteTypes {
     | '/app/juegos'
     | '/app/mascota'
     | '/app/misiones'
-    | '/app/noticias'
     | '/app/perfil'
     | '/app/recursos'
-    | '/web/contacto'
-    | '/web/familias'
-    | '/web/faq'
-    | '/web/instituciones'
-    | '/web/noticias'
-    | '/web/que-es'
-    | '/web/recursos'
     | '/admin/'
     | '/app/'
+    | '/app/juegos/cazadores'
+    | '/app/juegos/conexion'
+    | '/app/juegos/escudo'
+    | '/app/juegos/gratitud'
     | '/app/juegos/memorama'
     | '/app/juegos/respira'
+    | '/app/juegos/semaforo'
     | '/app/juegos/trivia'
     | '/app/juegos/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/web'
     | '/admin/alertas'
     | '/admin/encuestas'
     | '/admin/estudiantes'
@@ -342,20 +301,17 @@ export interface FileRouteTypes {
     | '/app/chat'
     | '/app/mascota'
     | '/app/misiones'
-    | '/app/noticias'
     | '/app/perfil'
     | '/app/recursos'
-    | '/web/contacto'
-    | '/web/familias'
-    | '/web/faq'
-    | '/web/instituciones'
-    | '/web/noticias'
-    | '/web/que-es'
-    | '/web/recursos'
     | '/admin'
     | '/app'
+    | '/app/juegos/cazadores'
+    | '/app/juegos/conexion'
+    | '/app/juegos/escudo'
+    | '/app/juegos/gratitud'
     | '/app/juegos/memorama'
     | '/app/juegos/respira'
+    | '/app/juegos/semaforo'
     | '/app/juegos/trivia'
     | '/app/juegos'
   id:
@@ -364,7 +320,6 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/auth'
-    | '/web'
     | '/admin/alertas'
     | '/admin/encuestas'
     | '/admin/estudiantes'
@@ -375,20 +330,17 @@ export interface FileRouteTypes {
     | '/app/juegos'
     | '/app/mascota'
     | '/app/misiones'
-    | '/app/noticias'
     | '/app/perfil'
     | '/app/recursos'
-    | '/web/contacto'
-    | '/web/familias'
-    | '/web/faq'
-    | '/web/instituciones'
-    | '/web/noticias'
-    | '/web/que-es'
-    | '/web/recursos'
     | '/admin/'
     | '/app/'
+    | '/app/juegos/cazadores'
+    | '/app/juegos/conexion'
+    | '/app/juegos/escudo'
+    | '/app/juegos/gratitud'
     | '/app/juegos/memorama'
     | '/app/juegos/respira'
+    | '/app/juegos/semaforo'
     | '/app/juegos/trivia'
     | '/app/juegos/'
   fileRoutesById: FileRoutesById
@@ -398,19 +350,11 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
-  WebRoute: typeof WebRouteWithChildren
   ApiChatRoute: typeof ApiChatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/web': {
-      id: '/web'
-      path: '/web'
-      fullPath: '/web'
-      preLoaderRoute: typeof WebRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -453,55 +397,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/web/recursos': {
-      id: '/web/recursos'
-      path: '/recursos'
-      fullPath: '/web/recursos'
-      preLoaderRoute: typeof WebRecursosRouteImport
-      parentRoute: typeof WebRoute
-    }
-    '/web/que-es': {
-      id: '/web/que-es'
-      path: '/que-es'
-      fullPath: '/web/que-es'
-      preLoaderRoute: typeof WebQueEsRouteImport
-      parentRoute: typeof WebRoute
-    }
-    '/web/noticias': {
-      id: '/web/noticias'
-      path: '/noticias'
-      fullPath: '/web/noticias'
-      preLoaderRoute: typeof WebNoticiasRouteImport
-      parentRoute: typeof WebRoute
-    }
-    '/web/instituciones': {
-      id: '/web/instituciones'
-      path: '/instituciones'
-      fullPath: '/web/instituciones'
-      preLoaderRoute: typeof WebInstitucionesRouteImport
-      parentRoute: typeof WebRoute
-    }
-    '/web/faq': {
-      id: '/web/faq'
-      path: '/faq'
-      fullPath: '/web/faq'
-      preLoaderRoute: typeof WebFaqRouteImport
-      parentRoute: typeof WebRoute
-    }
-    '/web/familias': {
-      id: '/web/familias'
-      path: '/familias'
-      fullPath: '/web/familias'
-      preLoaderRoute: typeof WebFamiliasRouteImport
-      parentRoute: typeof WebRoute
-    }
-    '/web/contacto': {
-      id: '/web/contacto'
-      path: '/contacto'
-      fullPath: '/web/contacto'
-      preLoaderRoute: typeof WebContactoRouteImport
-      parentRoute: typeof WebRoute
-    }
     '/app/recursos': {
       id: '/app/recursos'
       path: '/recursos'
@@ -514,13 +409,6 @@ declare module '@tanstack/react-router' {
       path: '/perfil'
       fullPath: '/app/perfil'
       preLoaderRoute: typeof AppPerfilRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/app/noticias': {
-      id: '/app/noticias'
-      path: '/noticias'
-      fullPath: '/app/noticias'
-      preLoaderRoute: typeof AppNoticiasRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/misiones': {
@@ -607,6 +495,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppJuegosTriviaRouteImport
       parentRoute: typeof AppJuegosRoute
     }
+    '/app/juegos/semaforo': {
+      id: '/app/juegos/semaforo'
+      path: '/semaforo'
+      fullPath: '/app/juegos/semaforo'
+      preLoaderRoute: typeof AppJuegosSemaforoRouteImport
+      parentRoute: typeof AppJuegosRoute
+    }
     '/app/juegos/respira': {
       id: '/app/juegos/respira'
       path: '/respira'
@@ -619,6 +514,34 @@ declare module '@tanstack/react-router' {
       path: '/memorama'
       fullPath: '/app/juegos/memorama'
       preLoaderRoute: typeof AppJuegosMemoramaRouteImport
+      parentRoute: typeof AppJuegosRoute
+    }
+    '/app/juegos/gratitud': {
+      id: '/app/juegos/gratitud'
+      path: '/gratitud'
+      fullPath: '/app/juegos/gratitud'
+      preLoaderRoute: typeof AppJuegosGratitudRouteImport
+      parentRoute: typeof AppJuegosRoute
+    }
+    '/app/juegos/escudo': {
+      id: '/app/juegos/escudo'
+      path: '/escudo'
+      fullPath: '/app/juegos/escudo'
+      preLoaderRoute: typeof AppJuegosEscudoRouteImport
+      parentRoute: typeof AppJuegosRoute
+    }
+    '/app/juegos/conexion': {
+      id: '/app/juegos/conexion'
+      path: '/conexion'
+      fullPath: '/app/juegos/conexion'
+      preLoaderRoute: typeof AppJuegosConexionRouteImport
+      parentRoute: typeof AppJuegosRoute
+    }
+    '/app/juegos/cazadores': {
+      id: '/app/juegos/cazadores'
+      path: '/cazadores'
+      fullPath: '/app/juegos/cazadores'
+      preLoaderRoute: typeof AppJuegosCazadoresRouteImport
       parentRoute: typeof AppJuegosRoute
     }
   }
@@ -643,15 +566,25 @@ const AdminRouteChildren: AdminRouteChildren = {
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AppJuegosRouteChildren {
+  AppJuegosCazadoresRoute: typeof AppJuegosCazadoresRoute
+  AppJuegosConexionRoute: typeof AppJuegosConexionRoute
+  AppJuegosEscudoRoute: typeof AppJuegosEscudoRoute
+  AppJuegosGratitudRoute: typeof AppJuegosGratitudRoute
   AppJuegosMemoramaRoute: typeof AppJuegosMemoramaRoute
   AppJuegosRespiraRoute: typeof AppJuegosRespiraRoute
+  AppJuegosSemaforoRoute: typeof AppJuegosSemaforoRoute
   AppJuegosTriviaRoute: typeof AppJuegosTriviaRoute
   AppJuegosIndexRoute: typeof AppJuegosIndexRoute
 }
 
 const AppJuegosRouteChildren: AppJuegosRouteChildren = {
+  AppJuegosCazadoresRoute: AppJuegosCazadoresRoute,
+  AppJuegosConexionRoute: AppJuegosConexionRoute,
+  AppJuegosEscudoRoute: AppJuegosEscudoRoute,
+  AppJuegosGratitudRoute: AppJuegosGratitudRoute,
   AppJuegosMemoramaRoute: AppJuegosMemoramaRoute,
   AppJuegosRespiraRoute: AppJuegosRespiraRoute,
+  AppJuegosSemaforoRoute: AppJuegosSemaforoRoute,
   AppJuegosTriviaRoute: AppJuegosTriviaRoute,
   AppJuegosIndexRoute: AppJuegosIndexRoute,
 }
@@ -666,7 +599,6 @@ interface AppRouteChildren {
   AppJuegosRoute: typeof AppJuegosRouteWithChildren
   AppMascotaRoute: typeof AppMascotaRoute
   AppMisionesRoute: typeof AppMisionesRoute
-  AppNoticiasRoute: typeof AppNoticiasRoute
   AppPerfilRoute: typeof AppPerfilRoute
   AppRecursosRoute: typeof AppRecursosRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -678,7 +610,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppJuegosRoute: AppJuegosRouteWithChildren,
   AppMascotaRoute: AppMascotaRoute,
   AppMisionesRoute: AppMisionesRoute,
-  AppNoticiasRoute: AppNoticiasRoute,
   AppPerfilRoute: AppPerfilRoute,
   AppRecursosRoute: AppRecursosRoute,
   AppIndexRoute: AppIndexRoute,
@@ -686,34 +617,11 @@ const AppRouteChildren: AppRouteChildren = {
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
-interface WebRouteChildren {
-  WebContactoRoute: typeof WebContactoRoute
-  WebFamiliasRoute: typeof WebFamiliasRoute
-  WebFaqRoute: typeof WebFaqRoute
-  WebInstitucionesRoute: typeof WebInstitucionesRoute
-  WebNoticiasRoute: typeof WebNoticiasRoute
-  WebQueEsRoute: typeof WebQueEsRoute
-  WebRecursosRoute: typeof WebRecursosRoute
-}
-
-const WebRouteChildren: WebRouteChildren = {
-  WebContactoRoute: WebContactoRoute,
-  WebFamiliasRoute: WebFamiliasRoute,
-  WebFaqRoute: WebFaqRoute,
-  WebInstitucionesRoute: WebInstitucionesRoute,
-  WebNoticiasRoute: WebNoticiasRoute,
-  WebQueEsRoute: WebQueEsRoute,
-  WebRecursosRoute: WebRecursosRoute,
-}
-
-const WebRouteWithChildren = WebRoute._addFileChildren(WebRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
-  WebRoute: WebRouteWithChildren,
   ApiChatRoute: ApiChatRoute,
 }
 export const routeTree = rootRouteImport

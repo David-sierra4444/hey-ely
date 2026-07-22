@@ -3,28 +3,28 @@ import { LogoMark } from "@/components/brand";
 import { EmergencyButton } from "@/components/emergency-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
-import { Home, MessageCircle, Target, Gamepad2, BookOpen, Newspaper, User, Sparkles, PawPrint, BarChart3, Users, ClipboardList, Bell, LogOut } from "lucide-react";
+import { Home, MessageCircle, Target, Gamepad2, BookOpen, User, Sparkles, PawPrint, BarChart3, Users, ClipboardList, Bell, LogOut } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
+// ❌ Se removió la pestaña de Noticias para estudiantes
 const studentNav = [
   { to: "/app", label: "Inicio", icon: Home, exact: true },
   { to: "/app/chat", label: "Chat con Ely", icon: MessageCircle },
   { to: "/app/misiones", label: "Misiones", icon: Target },
   { to: "/app/juegos", label: "Juegos", icon: Gamepad2 },
   { to: "/app/recursos", label: "Recursos", icon: BookOpen },
-  { to: "/app/noticias", label: "Noticias", icon: Newspaper },
   { to: "/app/avatar", label: "Avatar", icon: Sparkles },
   { to: "/app/mascota", label: "Mascota", icon: PawPrint },
   { to: "/app/perfil", label: "Perfil", icon: User },
 ];
 
+// ❌ Se removió la pestaña de Noticias para administradores
 const adminNav = [
   { to: "/admin", label: "Panel", icon: BarChart3, exact: true },
   { to: "/admin/estudiantes", label: "Estudiantes", icon: Users },
   { to: "/admin/encuestas", label: "Encuestas", icon: ClipboardList },
   { to: "/admin/alertas", label: "Alertas", icon: Bell },
-  { to: "/admin/noticias", label: "Noticias", icon: Newspaper },
 ];
 
 export function AppShell({ children, admin = false }: { children?: ReactNode; admin?: boolean }) {
@@ -87,7 +87,7 @@ export function AppShell({ children, admin = false }: { children?: ReactNode; ad
         {children ?? <Outlet />}
       </main>
 
-      {/* Mobile bottom nav (AHORA DESLIZABLE HORIZONTALMENTE) */}
+      {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-background/95 backdrop-blur border-t">
         <div className="flex overflow-x-auto scrollbar-none py-2 px-3 gap-1">
           {nav.map((item) => {
