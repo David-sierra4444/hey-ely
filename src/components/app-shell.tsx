@@ -3,7 +3,22 @@ import { LogoMark } from "@/components/brand";
 import { EmergencyButton } from "@/components/emergency-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
-import { Home, MessageCircle, Target, Gamepad2, BookOpen, User, Sparkles, PawPrint, BarChart3, Users, ClipboardList, Bell, LogOut } from "lucide-react";
+import { 
+  Home, 
+  MessageCircle, 
+  Target, 
+  Gamepad2, 
+  BookOpen, 
+  User, 
+  Sparkles, 
+  PawPrint, 
+  BarChart3, 
+  Users, 
+  ClipboardList, 
+  Bell, 
+  LogOut,
+  FileText // 👈 Icono para encuestas de estudiante
+} from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -11,6 +26,7 @@ const studentNav = [
   { to: "/app", label: "Inicio", icon: Home, exact: true },
   { to: "/app/chat", label: "Chat con Ely", icon: MessageCircle },
   { to: "/app/misiones", label: "Misiones", icon: Target },
+  { to: "/app/encuestas", label: "Encuestas", icon: FileText }, // 👈 Agregado aquí
   { to: "/app/juegos", label: "Juegos", icon: Gamepad2 },
   { to: "/app/recursos", label: "Recursos", icon: BookOpen },
   { to: "/app/avatar", label: "Avatar", icon: Sparkles },

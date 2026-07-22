@@ -20,6 +20,7 @@ import { Route as AppPerfilRouteImport } from './routes/app.perfil'
 import { Route as AppMisionesRouteImport } from './routes/app.misiones'
 import { Route as AppMascotaRouteImport } from './routes/app.mascota'
 import { Route as AppJuegosRouteImport } from './routes/app.juegos'
+import { Route as AppEncuestasRouteImport } from './routes/app.encuestas'
 import { Route as AppChatRouteImport } from './routes/app.chat'
 import { Route as AppAvatarRouteImport } from './routes/app.avatar'
 import { Route as ApiChatRouteImport } from './routes/api.chat'
@@ -90,6 +91,11 @@ const AppMascotaRoute = AppMascotaRouteImport.update({
 const AppJuegosRoute = AppJuegosRouteImport.update({
   id: '/juegos',
   path: '/juegos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEncuestasRoute = AppEncuestasRouteImport.update({
+  id: '/encuestas',
+  path: '/encuestas',
   getParentRoute: () => AppRoute,
 } as any)
 const AppChatRoute = AppChatRouteImport.update({
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/app/avatar': typeof AppAvatarRoute
   '/app/chat': typeof AppChatRoute
+  '/app/encuestas': typeof AppEncuestasRoute
   '/app/juegos': typeof AppJuegosRouteWithChildren
   '/app/mascota': typeof AppMascotaRoute
   '/app/misiones': typeof AppMisionesRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/app/avatar': typeof AppAvatarRoute
   '/app/chat': typeof AppChatRoute
+  '/app/encuestas': typeof AppEncuestasRoute
   '/app/mascota': typeof AppMascotaRoute
   '/app/misiones': typeof AppMisionesRoute
   '/app/perfil': typeof AppPerfilRoute
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/app/avatar': typeof AppAvatarRoute
   '/app/chat': typeof AppChatRoute
+  '/app/encuestas': typeof AppEncuestasRoute
   '/app/juegos': typeof AppJuegosRouteWithChildren
   '/app/mascota': typeof AppMascotaRoute
   '/app/misiones': typeof AppMisionesRoute
@@ -272,6 +281,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/app/avatar'
     | '/app/chat'
+    | '/app/encuestas'
     | '/app/juegos'
     | '/app/mascota'
     | '/app/misiones'
@@ -299,6 +309,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/app/avatar'
     | '/app/chat'
+    | '/app/encuestas'
     | '/app/mascota'
     | '/app/misiones'
     | '/app/perfil'
@@ -327,6 +338,7 @@ export interface FileRouteTypes {
     | '/api/chat'
     | '/app/avatar'
     | '/app/chat'
+    | '/app/encuestas'
     | '/app/juegos'
     | '/app/mascota'
     | '/app/misiones'
@@ -430,6 +442,13 @@ declare module '@tanstack/react-router' {
       path: '/juegos'
       fullPath: '/app/juegos'
       preLoaderRoute: typeof AppJuegosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/encuestas': {
+      id: '/app/encuestas'
+      path: '/encuestas'
+      fullPath: '/app/encuestas'
+      preLoaderRoute: typeof AppEncuestasRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/chat': {
@@ -596,6 +615,7 @@ const AppJuegosRouteWithChildren = AppJuegosRoute._addFileChildren(
 interface AppRouteChildren {
   AppAvatarRoute: typeof AppAvatarRoute
   AppChatRoute: typeof AppChatRoute
+  AppEncuestasRoute: typeof AppEncuestasRoute
   AppJuegosRoute: typeof AppJuegosRouteWithChildren
   AppMascotaRoute: typeof AppMascotaRoute
   AppMisionesRoute: typeof AppMisionesRoute
@@ -607,6 +627,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAvatarRoute: AppAvatarRoute,
   AppChatRoute: AppChatRoute,
+  AppEncuestasRoute: AppEncuestasRoute,
   AppJuegosRoute: AppJuegosRouteWithChildren,
   AppMascotaRoute: AppMascotaRoute,
   AppMisionesRoute: AppMisionesRoute,
