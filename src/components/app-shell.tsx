@@ -4,10 +4,9 @@ import { EmergencyButton } from "@/components/emergency-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { Home, MessageCircle, Target, Gamepad2, BookOpen, User, Sparkles, PawPrint, BarChart3, Users, ClipboardList, Bell, LogOut } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState, type ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-// ❌ Se removió la pestaña de Noticias para estudiantes
 const studentNav = [
   { to: "/app", label: "Inicio", icon: Home, exact: true },
   { to: "/app/chat", label: "Chat con Ely", icon: MessageCircle },
@@ -19,7 +18,6 @@ const studentNav = [
   { to: "/app/perfil", label: "Perfil", icon: User },
 ];
 
-// ❌ Se removió la pestaña de Noticias para administradores
 const adminNav = [
   { to: "/admin", label: "Panel", icon: BarChart3, exact: true },
   { to: "/admin/estudiantes", label: "Estudiantes", icon: Users },
@@ -27,12 +25,28 @@ const adminNav = [
   { to: "/admin/alertas", label: "Alertas", icon: Bell },
 ];
 
+const PET_EMOJIS: Record<string, string> = {
+  ely: "🐘", gato: "🐱", perro: "🐶", conejo: "🐰",
+  panda: "🐼", zorro: "🦊", capibara: "🦫", pinguino: "🐧",
+  buho: "🦉", axolote: "🦎", dragon: "🐉", robot: "🤖"
+};
+
 export function AppShell({ children, admin = false }: { children?: ReactNode; admin?: boolean }) {
   const { user, loading } = useSession();
   const { profile } = useProfile(user?.id);
   const navigate = useNavigate();
   const loc = useLocation();
   const qc = useQueryClient();
+
+  // Traer mascota activa para mostrarla globalmente
+  const { data: petData } = useQuery({
+    queryKey: ["active-pet-shell", user?.id],
+    enabled: !!user && !admin,
+    queryFn: async () => {
+      const { data } = await supabase.from("pets").select("active_pet").eq("user_id", user!.id).maybeSingle();
+      return data?.active_pet || "ely";
+    }
+  });
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth" });
@@ -69,14 +83,19 @@ export function AppShell({ children, admin = false }: { children?: ReactNode; ad
               );
             })}
           </nav>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-3">
             {profile && (
-              <div className="hidden sm:flex flex-col text-right leading-tight">
-                <span className="text-sm font-bold">{profile.full_name.split(" ")[0]}</span>
-                <span className="text-[11px] text-muted-foreground">Nivel {profile.level} · {profile.xp} XP</span>
+              <div className="hidden sm:flex items-center gap-2.5 bg-secondary/50 px-3 py-1 rounded-full border border-border/50">
+                <span className="text-xl leading-none" title="Tu mascota activa">
+                  {PET_EMOJIS[petData || "ely"] || "🐘"}
+                </span>
+                <div className="flex flex-col text-right leading-tight">
+                  <span className="text-xs font-bold text-foreground">{profile.full_name.split(" ")[0]}</span>
+                  <span className="text-[10px] text-muted-foreground font-semibold">Nivel {profile.level} · {profile.xp} XP</span>
+                </div>
               </div>
             )}
-            <button onClick={signOut} className="rounded-full border p-2 hover:bg-secondary" title="Salir">
+            <button onClick={signOut} className="rounded-full border p-2 hover:bg-secondary transition-colors" title="Salir">
               <LogOut className="h-4 w-4" />
             </button>
           </div>

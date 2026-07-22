@@ -3,12 +3,19 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { ElyMascot } from "@/components/brand";
-import { Send, AlertCircle } from "lucide-react";
+import { Send, AlertCircle, Sparkles, HeartPulse } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/chat")({ component: ChatPage });
 
 type Msg = { role: "user" | "assistant"; content: string };
+
+const SUGGESTED_PROMPTS = [
+  "¿Cómo puedo manejar un momento de estrés?",
+  "Hoy me siento un poco abrumado/a...",
+  "Necesito un consejo para concentrarme mejor",
+  "¿Hacemos un ejercicio rápido de calma?",
+];
 
 function ChatPage() {
   const { user } = useSession();
@@ -16,7 +23,7 @@ function ChatPage() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
-  const listRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -33,7 +40,7 @@ function ChatPage() {
           setMessages([
             {
               role: "assistant",
-              content: `Hola, ${firstName} 👋 Qué bueno verte. ¿Cómo te sientes hoy?`,
+              content: `Hola, ${firstName} 👋 Qué bueno verte por aquí. ¿Cómo va tu día o qué pasa por tu mente hoy?`,
             },
           ]);
         }
@@ -41,39 +48,32 @@ function ChatPage() {
   }, [user, profile]);
 
   useEffect(() => {
-    listRef.current?.scrollTo({
-      top: listRef.current.scrollHeight,
+    chatScrollRef.current?.scrollTo({
+      top: chatScrollRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages]);
+  }, [messages, sending]);
 
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    if (!input.trim()) return;
+  async function handleSendMessage(textToSend?: string) {
+    const textContent = textToSend || input;
+    if (!textContent.trim()) return;
 
     if (!user) {
       toast.error("Debes iniciar sesión para chatear.");
       return;
     }
 
-    const userMsg: Msg = { role: "user", content: input.trim() };
+    const userMsg: Msg = { role: "user", content: textContent.trim() };
     const next = [...messages, userMsg];
     setMessages(next);
     setInput("");
     setSending(true);
 
-    // 1. Guardar mensaje del usuario en Supabase
-    await supabase
-      .from("chat_messages")
-      .insert({ user_id: user.id, role: "user", content: userMsg.content });
-
     try {
-      console.log("🚀 Enviando mensaje a /api/chat...", {
-        userId: user.id,
-        institutionId: profile?.institution_id,
-      });
+      await supabase
+        .from("chat_messages")
+        .insert({ user_id: user.id, role: "user", content: userMsg.content });
 
-      // 2. Consultar API backend para respuesta e inspección de riesgo
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -86,22 +86,18 @@ function ChatPage() {
       });
 
       const data = await res.json();
-      console.log("📥 Respuesta recibida del servidor:", data);
-
       if (!res.ok) throw new Error(data.error || "Error al procesar el mensaje");
 
       const reply: Msg = { role: "assistant", content: data.reply };
       setMessages((m) => [...m, reply]);
 
-      // 3. Guardar respuesta del asistente
       await supabase
         .from("chat_messages")
         .insert({ user_id: user.id, role: "assistant", content: reply.content });
 
-      // 4. Si la IA detectó un riesgo, mostrar notificación
       if (data.riskDetected) {
         toast.warning(
-          "Ely detectó una situación importante. Recuerda que puedes usar el botón de emergencia si lo necesitas."
+          "Ely detectó una situación importante. Recuerda que cuentas con herramientas de apoyo."
         );
       }
     } catch (err: any) {
@@ -111,7 +107,7 @@ function ChatPage() {
         ...m,
         {
           role: "assistant",
-          content: "Perdona, tuve un problema para responder. ¿Intentamos de nuevo?",
+          content: "Perdona, tuve un pequeño problema técnico al responder. ¿Lo intentamos de nuevo?",
         },
       ]);
     } finally {
@@ -120,60 +116,104 @@ function ChatPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="card-soft p-4 flex items-center gap-3">
-        <ElyMascot className="w-16 h-16" />
-        <div>
-          <div className="font-extrabold">Chat con Ely</div>
-          <div className="text-xs text-muted-foreground flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" /> Conversación 100% privada.
+    // Contenedor principal que se ajusta perfectamente a la pantalla sin dejar espacios vacíos raros
+    <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-7rem)] md:h-[calc(100vh-6rem)]">
+      
+      {/* 1. Cabecera Fija arriba */}
+      <div className="card-soft p-3.5 md:p-4 flex items-center gap-3.5 bg-gradient-to-r from-purple-500/10 via-indigo-500/5 to-transparent border border-purple-500/20 shadow-xs rounded-2xl shrink-0 mb-3">
+        <div className="relative shrink-0">
+          <ElyMascot className="w-12 h-12 md:w-14 md:h-14 drop-shadow-sm" />
+          <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-card rounded-full animate-pulse" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="font-extrabold text-sm md:text-base flex items-center gap-2">
+            <span>Chat con Ely</span>
+            <span className="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-500 border border-purple-500/20">
+              IA Empática
+            </span>
+          </div>
+          <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+            <AlertCircle className="h-3 w-3 shrink-0 text-purple-400" /> 
+            <span>Espacio 100% confidencial y seguro.</span>
           </div>
         </div>
       </div>
 
-      <div ref={listRef} className="mt-4 h-[55vh] overflow-auto space-y-4 pr-1">
+      {/* 2. Zona de Mensajes con Scroll interno exclusivo para los mensajes (Estilo App Nativa) */}
+      <div 
+        ref={chatScrollRef}
+        className="flex-1 overflow-y-auto space-y-4 pr-1 pl-1 scroll-smooth"
+      >
         {messages.map((m, i) => (
           <div
             key={i}
-            className={`animate-pop flex ${
+            className={`flex animate-in fade-in duration-300 ${
               m.role === "user" ? "justify-end" : "justify-start"
             }`}
           >
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line space-y-2 ${
+              className={`max-w-[85%] md:max-w-[75%] rounded-3xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line shadow-xs ${
                 m.role === "user"
-                  ? "gradient-hero text-white rounded-br-none"
-                  : "card-soft bg-slate-50 text-slate-800 rounded-bl-none border border-slate-100 shadow-sm"
+                  ? "gradient-hero text-white rounded-br-xs font-medium"
+                  : "card-soft bg-card text-card-foreground rounded-bl-xs border border-border"
               }`}
             >
               {m.content}
             </div>
           </div>
         ))}
+
         {sending && (
-          <div className="flex justify-start">
-            <div className="text-xs text-muted-foreground pl-2 bg-slate-100 rounded-full px-3 py-1 animate-pulse">
-              Ely está escribiendo...
+          <div className="flex justify-start animate-pulse">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-card border border-border rounded-3xl rounded-bl-xs px-4 py-3 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-purple-500 animate-spin" />
+              <span>Ely está pensando su respuesta...</span>
             </div>
           </div>
         )}
       </div>
 
-      <form onSubmit={send} className="mt-4 flex gap-2">
-        <input
-          autoFocus
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Escríbele a Ely..."
-          className="flex-1 rounded-full border px-4 py-3 shadow-inner focus:outline-none focus:ring-2 focus:ring-primary/20"
-        />
-        <button
-          disabled={sending || !input.trim()}
-          className="rounded-full bg-primary text-primary-foreground px-5 font-bold disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center justify-center"
+      {/* 3. Área inferior: Sugerencias y Formulario de entrada perfectamente anclados abajo */}
+      <div className="shrink-0 pt-2 space-y-2 bg-background">
+        {messages.length <= 2 && !sending && (
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {SUGGESTED_PROMPTS.map((prompt, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleSendMessage(prompt)}
+                className="whitespace-nowrap text-xs font-semibold bg-card border hover:border-primary/50 hover:bg-primary/5 text-secondary-foreground px-3 py-2 rounded-xl transition-all shadow-2xs shrink-0 flex items-center gap-1.5"
+              >
+                <HeartPulse className="w-3.5 h-3.5 text-primary" />
+                {prompt}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <form 
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSendMessage();
+          }} 
+          className="flex gap-2 items-center"
         >
-          <Send className="h-4 w-4" />
-        </button>
-      </form>
+          <input
+            autoFocus
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Escríbele lo que quieras a Ely..."
+            className="flex-1 rounded-2xl border bg-card px-4 py-3 text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+          />
+          <button
+            type="submit"
+            disabled={sending || !input.trim()}
+            className="rounded-2xl bg-primary text-primary-foreground px-4 py-3 font-bold disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center justify-center shadow-md shrink-0 cursor-pointer"
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        </form>
+      </div>
+
     </div>
   );
 }

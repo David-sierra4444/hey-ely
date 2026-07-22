@@ -5,12 +5,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-2xl: calc(var(--radius) + 10px);
+  --radius-3xl: calc(var(--radius) + 16px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -30,120 +31,171 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
+  /* Identidad de Marca Ely (Paleta Tierra / Slate / Sage) */
   --color-ely-blue: var(--ely-blue);
   --color-ely-pink: var(--ely-pink);
   --color-ely-mint: var(--ely-mint);
   --color-ely-lavender: var(--ely-lavender);
   --color-ely-cream: var(--ely-cream);
-  --font-display: "Nunito", "Quicksand", ui-rounded, system-ui, sans-serif;
-  --font-sans: "Nunito", ui-rounded, system-ui, sans-serif;
+
+  --font-display: "Nunito", "Quicksand", ui-rounded, system-ui, -apple-system, sans-serif;
+  --font-sans: "Nunito", ui-rounded, system-ui, -apple-system, sans-serif;
 }
 
 :root {
   --radius: 1.25rem;
 
-  /* Nueva paleta madura y neutral — Tonos tierra, sage y pizarra */
-  --ely-blue: oklch(0.65 0.07 240);       /* Azul pizarra (sobrio y profesional) */
-  --ely-pink: oklch(0.92 0.03 70);        /* Arena / Beige cálido (reemplaza al rosa chillón) */
-  --ely-mint: oklch(0.82 0.05 160);       /* Verde Sage / Sabio (relajante y clínico) */
-  --ely-lavender: oklch(0.88 0.02 240);   /* Gris azulado muy suave (reemplaza al morado) */
-  --ely-cream: oklch(0.985 0.008 90);     /* Crema suave para fondos */
+  /* --- Paleta Sobria, Madura y Agradable Visualmente --- */
+  --ely-blue: oklch(0.62 0.08 245);      /* Azul Slate con cuerpo */
+  --ely-pink: oklch(0.93 0.03 75);       /* Arena cálida ultra suave */
+  --ely-mint: oklch(0.83 0.06 165);      /* Verde Menta / Sage relajante */
+  --ely-lavender: oklch(0.89 0.02 245);  /* Gris Perla / Azulado */
+  --ely-cream: oklch(0.988 0.006 90);    /* Fondo hueso / Crema */
 
-  --background: oklch(0.985 0.003 90);    /* Fondo color crema/hueso, más cálido que el blanco puro */
-  --foreground: oklch(0.28 0.03 240);     /* Texto gris oscuro pizarra (suave para la vista) */
+  --background: oklch(0.988 0.006 90);
+  --foreground: oklch(0.25 0.03 245);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.28 0.03 240);
+  --card-foreground: oklch(0.25 0.03 245);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.28 0.03 240);
+  --popover-foreground: oklch(0.25 0.03 245);
 
-  --primary: oklch(0.55 0.06 240);        /* Color principal: azul slate maduro */
-  --primary-foreground: oklch(0.99 0.005 300);
+  --primary: oklch(0.52 0.08 245);
+  --primary-foreground: oklch(0.99 0 0);
 
-  --secondary: oklch(0.94 0.02 90);       /* Botones secundarios en crema/arena suave */
-  --secondary-foreground: oklch(0.28 0.03 240);
+  --secondary: oklch(0.94 0.02 85);
+  --secondary-foreground: oklch(0.25 0.03 245);
 
-  --muted: oklch(0.95 0.01 240);
-  --muted-foreground: oklch(0.50 0.02 240);
+  --muted: oklch(0.95 0.01 245);
+  --muted-foreground: oklch(0.48 0.03 245);
 
-  --accent: oklch(0.82 0.05 160);         /* Acentos visuales en verde sage */
-  --accent-foreground: oklch(0.28 0.03 240);
+  --accent: oklch(0.83 0.06 165);
+  --accent-foreground: oklch(0.22 0.04 165);
 
-  --destructive: oklch(0.63 0.19 25);
-  --destructive-foreground: oklch(0.99 0.005 300);
+  --destructive: oklch(0.60 0.20 25);
+  --destructive-foreground: oklch(0.99 0 0);
 
-  --border: oklch(0.90 0.01 240);
-  --input: oklch(0.94 0.01 240);
-  --ring: oklch(0.55 0.06 240);
+  --border: oklch(0.91 0.01 245);
+  --input: oklch(0.93 0.01 245);
+  --ring: oklch(0.52 0.08 245);
 
-  /* Gradientes rediseñados: transiciones suaves entre azul pizarra, gris y verde sage */
-  --gradient-hero: linear-gradient(135deg, var(--ely-blue) 0%, var(--ely-lavender) 50%, var(--ely-mint) 100%);
-  --gradient-mint: linear-gradient(135deg, var(--ely-mint), var(--ely-blue));
-  --gradient-warm: linear-gradient(135deg, var(--ely-pink), var(--ely-lavender));
-  
-  --shadow-soft: 0 8px 32px -8px color-mix(in oklab, var(--primary) 15%, transparent);
-  --shadow-card: 0 4px 20px -6px color-mix(in oklab, var(--ely-blue) 15%, transparent);
+  /* --- Gradientes Dinámicos y Sombras Suaves --- */
+  --gradient-hero: linear-gradient(135deg, var(--ely-blue) 0%, var(--ely-lavender) 55%, var(--ely-mint) 100%);
+  --gradient-mint: linear-gradient(135deg, var(--ely-mint) 0%, var(--ely-blue) 100%);
+  --gradient-warm: linear-gradient(135deg, var(--ely-pink) 0%, var(--ely-lavender) 100%);
+
+  --shadow-soft: 0 12px 36px -10px color-mix(in oklab, var(--primary) 18%, transparent);
+  --shadow-card: 0 6px 24px -8px color-mix(in oklab, var(--ely-blue) 12%, transparent);
+  --shadow-glow: 0 0 25px -5px color-mix(in oklab, var(--primary) 30%, transparent);
 }
 
 .dark {
-  /* Modo oscuro adaptado a los nuevos tonos neutrales y descansados */
-  --background: oklch(0.20 0.02 240);     /* Fondo pizarra oscuro profundo, no negro puro */
-  --foreground: oklch(0.95 0.01 240);     /* Texto gris claro suave */
-  --card: oklch(0.24 0.02 240);
-  --card-foreground: oklch(0.95 0.01 240);
-  --popover: oklch(0.24 0.02 240);
-  --popover-foreground: oklch(0.95 0.01 240);
-  
-  --primary: oklch(0.65 0.05 240);        /* Azul pizarra más luminoso para contraste */
-  --primary-foreground: oklch(0.20 0.02 240);
-  
-  --secondary: oklch(0.28 0.02 240);
-  --secondary-foreground: oklch(0.95 0.01 240);
-  
-  --muted: oklch(0.26 0.02 240);
-  --muted-foreground: oklch(0.70 0.01 240);
-  
-  --accent: oklch(0.32 0.03 160);         /* Acento verde sage oscuro */
-  --accent-foreground: oklch(0.95 0.01 240);
-  
-  --destructive: oklch(0.65 0.19 25);
-  --destructive-foreground: oklch(0.99 0.005 300);
-  
-  --border: oklch(0.30 0.02 240);
-  --input: oklch(0.30 0.02 240);
-  --ring: oklch(0.65 0.05 240);
+  /* --- Modo Oscuro Pro: Pizarra Profunda y Descansada --- */
+  --background: oklch(0.18 0.02 245);
+  --foreground: oklch(0.96 0.01 245);
+
+  --card: oklch(0.22 0.02 245);
+  --card-foreground: oklch(0.96 0.01 245);
+  --popover: oklch(0.22 0.02 245);
+  --popover-foreground: oklch(0.96 0.01 245);
+
+  --primary: oklch(0.68 0.07 245);
+  --primary-foreground: oklch(0.15 0.02 245);
+
+  --secondary: oklch(0.26 0.02 245);
+  --secondary-foreground: oklch(0.96 0.01 245);
+
+  --muted: oklch(0.25 0.02 245);
+  --muted-foreground: oklch(0.68 0.02 245);
+
+  --accent: oklch(0.35 0.04 165);
+  --accent-foreground: oklch(0.96 0.01 245);
+
+  --destructive: oklch(0.62 0.20 25);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.28 0.02 245);
+  --input: oklch(0.28 0.02 245);
+  --ring: oklch(0.68 0.07 245);
+
+  --shadow-soft: 0 12px 36px -10px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 6px 24px -8px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 30px -5px color-mix(in oklab, var(--primary) 40%, transparent);
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html, body { font-family: var(--font-sans); }
+  * {
+    border-color: var(--color-border);
+    outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
-    background: var(--background);
+    font-family: var(--font-sans);
+    background-color: var(--background);
     color: var(--foreground);
     background-image:
-      radial-gradient(60% 40% at 10% 0%, color-mix(in oklab, var(--ely-blue) 12%, transparent) 0%, transparent 60%),
-      radial-gradient(50% 40% at 100% 20%, color-mix(in oklab, var(--ely-pink) 15%, transparent) 0%, transparent 60%),
-      radial-gradient(70% 50% at 50% 100%, color-mix(in oklab, var(--ely-mint) 12%, transparent) 0%, transparent 60%);
+      radial-gradient(55% 45% at 10% 0%, color-mix(in oklab, var(--ely-blue) 14%, transparent) 0%, transparent 70%),
+      radial-gradient(45% 40% at 90% 15%, color-mix(in oklab, var(--ely-pink) 18%, transparent) 0%, transparent 70%),
+      radial-gradient(65% 50% at 50% 100%, color-mix(in oklab, var(--ely-mint) 14%, transparent) 0%, transparent 70%);
     background-attachment: fixed;
+    min-height: 100vh;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); font-weight: 800; letter-spacing: -0.01em; }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  /* Ocultar scrollbar pero mantener scroll funcional si se requiere */
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
+
+/* --- Utilidades de Diseño & Tarjetas --- */
 
 @utility card-soft {
   background: var(--card);
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-card);
   border: 1px solid var(--border);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+@utility glass-panel {
+  background: color-mix(in oklab, var(--card) 75%, transparent);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
+  border-radius: var(--radius-2xl);
+}
+
 @utility gradient-hero {
   background: var(--gradient-hero);
 }
+
 @utility gradient-mint {
   background: var(--gradient-mint);
 }
+
 @utility gradient-warm {
   background: var(--gradient-warm);
 }
+
 @utility text-gradient-ely {
   background: var(--gradient-hero);
   -webkit-background-clip: text;
@@ -151,19 +203,49 @@
   color: transparent;
 }
 
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+/* --- Keyframes & Animaciones Pulidas --- */
+
 @keyframes bob {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-7px); }
 }
+
 @keyframes wag {
   0%, 100% { transform: rotate(-3deg); }
   50% { transform: rotate(3deg); }
 }
+
 @keyframes pop {
-  0% { transform: scale(0.9); opacity: 0; }
+  0% { transform: scale(0.92); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 
-@utility animate-bob { animation: bob 3s ease-in-out infinite; }
-@utility animate-wag { animation: wag 2s ease-in-out infinite; transform-origin: bottom center; }
-@utility animate-pop { animation: pop 0.4s ease-out both; }
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(0.98); }
+}
+
+@utility animate-bob { 
+  animation: bob 3.5s ease-in-out infinite; 
+}
+
+@utility animate-wag { 
+  animation: wag 2.2s ease-in-out infinite; 
+  transform-origin: bottom center; 
+}
+
+@utility animate-pop { 
+  animation: pop 0.35s cubic-bezier(0.16, 1, 0.3, 1) both; 
+}
+
+@utility animate-pulse-subtle {
+  animation: pulse-subtle 3s ease-in-out infinite;
+}
