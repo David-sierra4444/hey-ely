@@ -116,11 +116,11 @@ function ChatPage() {
   }
 
   return (
-    // Contenedor principal que se ajusta perfectamente a la pantalla sin dejar espacios vacíos raros
-    <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-7rem)] md:h-[calc(100vh-6rem)]">
+    /* Contenedor padre con altura fija y sin desbordamiento externo */
+    <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-10rem)] md:h-[calc(100vh-7rem)] overflow-hidden">
       
-      {/* 1. Cabecera Fija arriba */}
-      <div className="card-soft p-3.5 md:p-4 flex items-center gap-3.5 bg-gradient-to-r from-purple-500/10 via-indigo-500/5 to-transparent border border-purple-500/20 shadow-xs rounded-2xl shrink-0 mb-3">
+      {/* 1. Cabecera fija (shrink-0 asegura que no cambie de tamaño) */}
+      <div className="shrink-0 card-soft p-3.5 md:p-4 flex items-center gap-3.5 bg-gradient-to-r from-purple-500/10 via-indigo-500/5 to-transparent border border-purple-500/20 shadow-xs rounded-2xl mb-3">
         <div className="relative shrink-0">
           <ElyMascot className="w-12 h-12 md:w-14 md:h-14 drop-shadow-sm" />
           <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-card rounded-full animate-pulse" />
@@ -139,10 +139,10 @@ function ChatPage() {
         </div>
       </div>
 
-      {/* 2. Zona de Mensajes con Scroll interno exclusivo para los mensajes (Estilo App Nativa) */}
+      {/* 2. Zona con scroll interno dinámico (min-h-0 es clave en flexbox) */}
       <div 
         ref={chatScrollRef}
-        className="flex-1 overflow-y-auto space-y-4 pr-1 pl-1 scroll-smooth"
+        className="flex-1 min-h-0 overflow-y-auto space-y-4 px-2 py-1 scroll-smooth"
       >
         {messages.map((m, i) => (
           <div
@@ -173,8 +173,8 @@ function ChatPage() {
         )}
       </div>
 
-      {/* 3. Área inferior: Sugerencias y Formulario de entrada perfectamente anclados abajo */}
-      <div className="shrink-0 pt-2 space-y-2 bg-background">
+      {/* 3. Área inferior anclada (shrink-0 garantiza que nunca se mueva ni oculte) */}
+      <div className="shrink-0 pt-3 space-y-2 bg-background border-t border-border/40 mt-2">
         {messages.length <= 2 && !sending && (
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             {SUGGESTED_PROMPTS.map((prompt, idx) => (

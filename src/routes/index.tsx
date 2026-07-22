@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LogoMark, ElyMascot } from "@/components/brand";
-import { Heart, Shield, GraduationCap, Sparkles, ArrowRight } from "lucide-react";
+import { Heart, Shield, GraduationCap, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,27 +28,13 @@ function Landing() {
           <Link to="/" className="flex items-center gap-2 transition-transform hover:scale-[1.02]">
             <LogoMark />
           </Link>
-          
-          
-        
-          {/* Botones de acción */}
-          <div className="flex items-center gap-3">
-            <a 
-              href="https://hey-ely-ears-to-you.lovable.app/" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="md:hidden flex items-center gap-1 text-xs text-primary font-bold hover:underline"
-            >
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Sitio Web
-            </a>
-            <Link 
-              to="/auth" 
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs sm:text-sm font-black text-primary-foreground shadow-soft hover:shadow-glow transition-all hover:scale-[1.03] active:scale-[0.98]"
-            >
-              <span>Entrar</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+          <Link 
+            to="/auth" 
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-xs sm:text-sm font-black text-primary-foreground shadow-soft hover:shadow-glow transition-all hover:scale-[1.03] active:scale-[0.98]"
+          >
+            <span>Entrar</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </header>
 
