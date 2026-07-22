@@ -37,11 +37,13 @@ export const Route = createFileRoute('/api/chat')({
             );
           }
 
-          const { messages, userId, institutionId } = await request.json() as { 
-            messages: Array<{ role: string; content: string }>;
-            userId?: string;
-            institutionId?: string;
-          };
+          const body = await request.json();
+
+          const messages = body.messages as Array<{ role: string; content: string }>;
+          
+          // Mapeo flexible de IDs (Soporta camelCase y snake_case)
+          const userId = body.userId || body.user_id || body.studentId || body.student_user_id || null;
+          const institutionId = body.institutionId || body.institution_id || null;
 
           if (!messages || !Array.isArray(messages)) {
             return Response.json(
@@ -73,30 +75,33 @@ export const Route = createFileRoute('/api/chat')({
           if (emotionalRisk.isRisk) {
             if (supabase) {
               try {
-                // Validación estricta: student_user_id e institution_id son NOT NULL en la DB
-                if (!userId || !institutionId) {
-                  console.warn("[Hey Ely] ⚠️ Se detectó riesgo pero faltan datos obligatorios del usuario/institución:", { userId, institutionId });
-                } else {
-                  const { data, error } = await supabase
-                    .from('alerts')
-                    .insert([
-                      { 
-                        student_user_id: userId,
-                        institution_id: institutionId,
-                        risk_level: emotionalRisk.level,
-                        category: emotionalRisk.category,
-                        status: 'pending',
-                        notes: `[Análisis IA]: ${emotionalRisk.reasoning} | Mensaje: "${lastUserMessage.slice(0, 200)}"`
-                      }
-                    ])
-                    .select();
+                // Si faltan datos, se colocan identificadores por defecto para asegurar el registro
+                const finalUserId = userId || "UNKNOWN_USER";
+                const finalInstitutionId = institutionId || "UNKNOWN_INSTITUTION";
 
-                  if (error) {
-                    console.error("[Hey Ely] ❌ Error de Postgres al guardar alerta:", error);
-                  } else {
-                    console.log("[Hey Ely] ✅ Alerta de riesgo real registrada correctamente en Supabase:", data);
-                    alertCreated = true;
-                  }
+                if (!userId || !institutionId) {
+                  console.warn("[Hey Ely] ⚠️ Se detectó riesgo pero faltan datos en la petición. Se usará fallback:", { userId, institutionId });
+                }
+
+                const { data, error } = await supabase
+                  .from('alerts')
+                  .insert([
+                    { 
+                      student_user_id: finalUserId,
+                      institution_id: finalInstitutionId,
+                      risk_level: emotionalRisk.level,
+                      category: emotionalRisk.category,
+                      status: 'pending',
+                      notes: `[Análisis IA]: ${emotionalRisk.reasoning} | Mensaje: "${lastUserMessage.slice(0, 200)}"`
+                    }
+                  ])
+                  .select();
+
+                if (error) {
+                  console.error("[Hey Ely] ❌ Error de Postgres al guardar alerta:", error);
+                } else {
+                  console.log("[Hey Ely] ✅ Alerta de riesgo registrada correctamente en Supabase:", data);
+                  alertCreated = true;
                 }
               } catch (dbErr) {
                 console.error("[Hey Ely] ❌ Excepción al intentar guardar alerta:", dbErr);
@@ -186,7 +191,6 @@ export const Route = createFileRoute('/api/chat')({
 // FUNCIONES AUXILIARES DE EVALUACIÓN
 // ==========================================
 
-// 1. Detector de riesgos técnicos
 function detectSecurityRisks(text: string): boolean {
   const riskPatterns = [
     /bypass sandbox/i,
@@ -200,13 +204,11 @@ function detectSecurityRisks(text: string): boolean {
   return riskPatterns.some(pattern => pattern.test(text));
 }
 
-// 2. Evaluador de Riesgo Emocional Semántico basado en IA (Groq Llama-3)
 async function detectEmotionalRiskWithGroq(
   text: string, 
   apiKey: string
 ): Promise<{ isRisk: boolean; level: 'critical' | 'high' | 'low'; category: string; reasoning: string }> {
   
-  // Si el texto es extremadamente corto (ej. "hola", "ok"), evitar gastar tokens
   if (text.trim().length < 4) {
     return { isRisk: false, level: 'low', category: 'none', reasoning: 'Mensaje demasiado corto' };
   }
@@ -239,7 +241,7 @@ Responde ÚNICAMENTE en JSON con esta estructura exacta (sin formato markdown ni
       body: JSON.stringify({
         model: "llama-3.1-8b-instant",
         messages: [{ role: "user", content: prompt }],
-        temperature: 0.0, // Respuestas 100% deterministas
+        temperature: 0.0,
         response_format: { type: "json_object" }
       })
     });
@@ -260,7 +262,6 @@ Responde ÚNICAMENTE en JSON con esta estructura exacta (sin formato markdown ni
   } catch (err) {
     console.warn("[Hey Ely] ⚠️ Falló la evaluación por IA de riesgo. Usando fallback básico por patrones:", err);
     
-    // Fallback de seguridad si falla la API de Groq
     const textLower = text.toLowerCase();
     if (/suicid|matarm|quitarme la vida|no quiero vivir|cortarm|desaparecer/i.test(textLower)) {
       return { isRisk: true, level: 'critical', category: 'self_harm', reasoning: 'Coincidencia con patrón crítico' };
