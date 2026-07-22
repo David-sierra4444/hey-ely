@@ -1,29 +1,29 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 
-// 1. Inicialización de Supabase para las alertas en el servidor
+// 1. Inicialización del cliente de Supabase Admin (debe usar Service Role)
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || '';
-const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '';
 
-// 2. Buscamos la API Key de Groq
+// Se utiliza service role key para no tener bloqueos de RLS al guardar la alerta en el servidor
+const supabase = supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null;
+
+// 2. API Key de Groq
 const groqApiKey = process.env.GROQ_API_KEY;
 
-// 3. Definición de la ruta usando createFileRoute
 export const Route = createFileRoute('/api/chat')({
   server: {
     handlers: {
       POST: async ({ request }) => {
         try {
           if (!groqApiKey) {
-            console.error("[Hey Ely] Falta la variable de entorno GROQ_API_KEY en el servidor.");
+            console.error("[Hey Ely] Falta la variable de entorno GROQ_API_KEY.");
             return Response.json(
               { error: "La clave de API de Groq no está configurada en el servidor." },
               { status: 500 }
             );
           }
 
-          // Obtenemos los mensajes y la información del usuario enviado por el cliente
           const { messages, userId, institutionId } = await request.json() as { 
             messages: Array<{ role: string; content: string }>;
             userId?: string;
@@ -40,43 +40,57 @@ export const Route = createFileRoute('/api/chat')({
           const lastUserMessage = messages[messages.length - 1]?.content || "";
 
           // ==========================================
-          // 1. DETECTOR DE RIESGOS TÉCNICOS / CIBERSEGURIDAD
+          // 1. DETECTOR DE RIESGOS TÉCNICOS
           // ==========================================
           const isSecurityRisk = detectSecurityRisks(lastUserMessage);
           
           if (isSecurityRisk) {
             return Response.json({
               reply: "Oye, entiendo que estés explorando, pero por motivos de seguridad no puedo ayudarte con peticiones relacionadas con vulnerabilidades.",
-              text: "Oye, entiendo que estés explorando, pero por motivos de seguridad no puedo ayudarte con peticiones relacionadas con vulnerabilidades.",
-              choices: [{ message: { role: "assistant", content: "Oye, entiendo que estés explorando..." } }]
+              riskDetected: false
             });
           }
 
           // ==========================================
-          // 2. DETECTOR DE RIESGO EMOCIONAL (ALERTAS A DIRECTIVOS)
+          // 2. DETECTOR DE RIESGO EMOCIONAL Y GUARDA DE ALERTA
           // ==========================================
           const emotionalRisk = detectEmotionalRisk(lastUserMessage);
+          let alertCreated = false;
 
-          if (emotionalRisk.isRisk && supabase) {
-            supabase
-              .from('alerts')
-              .insert([
-                { 
-                  student_user_id: userId || null,
-                  institution_id: institutionId || null,
-                  risk_level: emotionalRisk.level,
-                  category: emotionalRisk.category,
-                  status: 'pending',
-                  notes: `Mensaje detectado: "${lastUserMessage.slice(0, 300)}"`
+          if (emotionalRisk.isRisk) {
+            if (supabase) {
+              try {
+                // AWAIT indispensable para asegurar la inserción antes de finalizar el handler
+                const { data, error } = await supabase
+                  .from('alerts')
+                  .insert([
+                    { 
+                      student_user_id: userId || null,
+                      institution_id: institutionId || null,
+                      risk_level: emotionalRisk.level,
+                      category: emotionalRisk.category,
+                      status: 'pending',
+                      notes: `Mensaje detectado: "${lastUserMessage.slice(0, 300)}"`
+                    }
+                  ])
+                  .select();
+
+                if (error) {
+                  console.error("[Hey Ely] ❌ Error de Postgres al guardar alerta:", error);
+                } else {
+                  console.log("[Hey Ely] ✅ Alerta registrada correctamente en Supabase:", data);
+                  alertCreated = true;
                 }
-              ])
-              .then(({ error }) => {
-                if (error) console.error("[Hey Ely] Error guardando alerta en Supabase:", error.message);
-              });
+              } catch (dbErr) {
+                console.error("[Hey Ely] ❌ Excepción al intentar guardar alerta:", dbErr);
+              }
+            } else {
+              console.warn("[Hey Ely] ⚠️ Se detectó riesgo pero no se inicializó el cliente de Supabase (revisa SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY).");
+            }
           }
 
           // ==========================================
-          // PERSONALIDAD MEJORADA
+          // 3. CONTEXTO Y PROMPT DE SISTEMA
           // ==========================================
           const systemContext = 
             "Eres Ely (Hey Ely), una brújula emocional y asistente de apoyo.\n\n" +
@@ -86,13 +100,10 @@ export const Route = createFileRoute('/api/chat')({
             "1. Cero condescendencia ni cursilería: NUNCA uses diminutivos (ej. 'corazoncito', 'lindo'), ni tonos excesivamente maternales o melosos. Evita la positividad tóxica ('¡todo saldrá bien!'). Valida con realismo (ej. 'La ansiedad física es increíblemente abrumadora, pero tu cuerpo sabe cómo regularse').\n" +
             "2. Sin rodeos ni etiquetas: Habla de forma directa. No uses subtítulos robóticos como '**Solución**:' o '**Ejercicios**:'. Integra todo de forma fluida y natural.\n" +
             "3. Enfoque práctico: Prioriza dar herramientas claras y aterrizadas para que el usuario recupere el control de su mente y cuerpo. Si planteas ejercicios físicos o de respiración, muéstralos en listas numeradas sencillas.\n" +
-            "4. Variabilidad de estructura (Evita la monotonía): No estructures todas tus respuestas igual. Cambia la forma en que inicias la conversación (no repitas siempre el mismo saludo). Varía la longitud de tus párrafos: combina ideas cortas con explicaciones un poco más detalladas de manera orgánica. Usa el doble salto de línea para mantener el texto limpio y legible.\n" +
-            "5. Comunicación precisa y spontaneous: Habla como lo haría un ser humano inteligente, adaptándote de verdad al flujo del usuario. No hagas cuestionarios interminables. Máximo una pregunta muy puntual al final que ayude a la persona a enfocar su pensamiento o desahogarse de forma concreta.\n" +
-            "6. Idioma: Responde siempre en español, manteniendo un tono sobrio, maduro, empático pero con los pies firmes sobre la tierra.";
+            "4. Variabilidad de estructura (Evita la monotonía): No estructures todas tus respuestas igual. Cambia la forma en que inicias la conversación. Varía la longitud de tus párrafos: combina ideas cortas con explicaciones un poco más detalladas. Usa el doble salto de línea para mantener el texto limpio.\n" +
+            "5. Comunicación precisa: Habla como lo haría un ser humano inteligente, adaptándote de verdad al flujo del usuario. Máximo una pregunta muy puntual al final que ayude a la persona a enfocar su pensamiento o desahogarse de forma concreta.\n" +
+            "6. Idioma: Responde siempre en español, manteniendo un tono sobrio, maduro y empático.";
 
-          // ==========================================
-          // RECORTE DEL HISTORIAL
-          // ==========================================
           const limitedMessages = messages.slice(-6); 
           
           const formattedMessages = [
@@ -106,10 +117,10 @@ export const Route = createFileRoute('/api/chat')({
             }))
           ];
 
-          // Endpoint oficial de Groq
-          const endpoint = "https://api.groq.com/openai/v1/chat/completions";
-
-          const response = await fetch(endpoint, {
+          // ==========================================
+          // 4. PETICIÓN A LA API DE GROQ
+          // ==========================================
+          const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -139,15 +150,7 @@ export const Route = createFileRoute('/api/chat')({
 
           return Response.json({
             reply: assistantReply,
-            text: assistantReply,
-            content: assistantReply,
-            message: assistantReply,
-            choices: [{
-              message: {
-                role: "assistant",
-                content: assistantReply
-              }
-            }]
+            riskDetected: emotionalRisk.isRisk || alertCreated
           });
 
         } catch (err: any) {
@@ -180,7 +183,7 @@ function detectSecurityRisks(text: string): boolean {
 function detectEmotionalRisk(text: string): { isRisk: boolean; level: string; category: string } {
   const textLower = text.toLowerCase();
 
-  if (/suicid|matarm|quitarme la vida|no quiero vivir|cortarm|no aguanto mas/i.test(textLower)) {
+  if (/suicid|matarm|quitarme la vida|no quiero vivir|cortarm|no aguanto mas|hacer daño/i.test(textLower)) {
     return { isRisk: true, level: 'critical', category: 'self_harm' };
   }
 
