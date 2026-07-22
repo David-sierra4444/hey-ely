@@ -1,15 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 
-// 1. Inicialización del cliente de Supabase Admin (debe usar Service Role)
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || '';
+// ==========================================
+// CONFIGURACIÓN Y CLIENTES (Variables de Entorno)
+// ==========================================
+const supabaseUrl = 
+  process.env.SUPABASE_URL || 
+  process.env.VITE_SUPABASE_URL || 
+  'https://ntrrsqmiuwnspcoahovr.supabase.co';
 
-// Se utiliza service role key para no tener bloqueos de RLS al guardar la alerta en el servidor
-const supabase = supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null;
+// Usar obligatoriamente SERVICE_ROLE_KEY en el servidor para evitar bloqueos por RLS
+const supabaseServiceKey = 
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 
+  process.env.SUPABASE_KEY || 
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY || 
+  '';
 
-// 2. API Key de Groq
-const groqApiKey = process.env.GROQ_API_KEY;
+// Cliente de Supabase optimizado para operaciones de backend
+const supabase = (supabaseUrl && supabaseServiceKey) 
+  ? createClient(supabaseUrl, supabaseServiceKey) 
+  : null;
+
+// API Key de Groq
+const groqApiKey = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
 
 export const Route = createFileRoute('/api/chat')({
   server: {
@@ -17,7 +30,7 @@ export const Route = createFileRoute('/api/chat')({
       POST: async ({ request }) => {
         try {
           if (!groqApiKey) {
-            console.error("[Hey Ely] Falta la variable de entorno GROQ_API_KEY.");
+            console.error("[Hey Ely] ❌ Falta la variable de entorno GROQ_API_KEY.");
             return Response.json(
               { error: "La clave de API de Groq no está configurada en el servidor." },
               { status: 500 }
@@ -52,40 +65,44 @@ export const Route = createFileRoute('/api/chat')({
           }
 
           // ==========================================
-          // 2. DETECTOR DE RIESGO EMOCIONAL Y GUARDA DE ALERTA
+          // 2. DETECTOR DE RIESGO EMOCIONAL VÍA GROQ (IA)
           // ==========================================
-          const emotionalRisk = detectEmotionalRisk(lastUserMessage);
+          const emotionalRisk = await detectEmotionalRiskWithGroq(lastUserMessage, groqApiKey);
           let alertCreated = false;
 
           if (emotionalRisk.isRisk) {
             if (supabase) {
               try {
-                // AWAIT indispensable para asegurar la inserción antes de finalizar el handler
-                const { data, error } = await supabase
-                  .from('alerts')
-                  .insert([
-                    { 
-                      student_user_id: userId || null,
-                      institution_id: institutionId || null,
-                      risk_level: emotionalRisk.level,
-                      category: emotionalRisk.category,
-                      status: 'pending',
-                      notes: `Mensaje detectado: "${lastUserMessage.slice(0, 300)}"`
-                    }
-                  ])
-                  .select();
-
-                if (error) {
-                  console.error("[Hey Ely] ❌ Error de Postgres al guardar alerta:", error);
+                // Validación estricta: student_user_id e institution_id son NOT NULL en la DB
+                if (!userId || !institutionId) {
+                  console.warn("[Hey Ely] ⚠️ Se detectó riesgo pero faltan datos obligatorios del usuario/institución:", { userId, institutionId });
                 } else {
-                  console.log("[Hey Ely] ✅ Alerta registrada correctamente en Supabase:", data);
-                  alertCreated = true;
+                  const { data, error } = await supabase
+                    .from('alerts')
+                    .insert([
+                      { 
+                        student_user_id: userId,
+                        institution_id: institutionId,
+                        risk_level: emotionalRisk.level,
+                        category: emotionalRisk.category,
+                        status: 'pending',
+                        notes: `[Análisis IA]: ${emotionalRisk.reasoning} | Mensaje: "${lastUserMessage.slice(0, 200)}"`
+                      }
+                    ])
+                    .select();
+
+                  if (error) {
+                    console.error("[Hey Ely] ❌ Error de Postgres al guardar alerta:", error);
+                  } else {
+                    console.log("[Hey Ely] ✅ Alerta de riesgo real registrada correctamente en Supabase:", data);
+                    alertCreated = true;
+                  }
                 }
               } catch (dbErr) {
                 console.error("[Hey Ely] ❌ Excepción al intentar guardar alerta:", dbErr);
               }
             } else {
-              console.warn("[Hey Ely] ⚠️ Se detectó riesgo pero no se inicializó el cliente de Supabase (revisa SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY).");
+              console.warn("[Hey Ely] ⚠️ Se detectó riesgo pero no se inicializó el cliente de Supabase (revisa variables de entorno).");
             }
           }
 
@@ -118,7 +135,7 @@ export const Route = createFileRoute('/api/chat')({
           ];
 
           // ==========================================
-          // 4. PETICIÓN A LA API DE GROQ
+          // 4. PETICIÓN A LA API DE GROQ (RESPUESTA DE CHAT)
           // ==========================================
           const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
             method: 'POST',
@@ -165,7 +182,11 @@ export const Route = createFileRoute('/api/chat')({
   }
 });
 
-// Detector de riesgos técnicos
+// ==========================================
+// FUNCIONES AUXILIARES DE EVALUACIÓN
+// ==========================================
+
+// 1. Detector de riesgos técnicos
 function detectSecurityRisks(text: string): boolean {
   const riskPatterns = [
     /bypass sandbox/i,
@@ -179,19 +200,73 @@ function detectSecurityRisks(text: string): boolean {
   return riskPatterns.some(pattern => pattern.test(text));
 }
 
-// Detector de riesgo emocional para alertas a directivos
-function detectEmotionalRisk(text: string): { isRisk: boolean; level: string; category: string } {
-  const textLower = text.toLowerCase();
-
-  if (/suicid|matarm|quitarme la vida|no quiero vivir|cortarm|no aguanto mas|hacer daño/i.test(textLower)) {
-    return { isRisk: true, level: 'critical', category: 'self_harm' };
+// 2. Evaluador de Riesgo Emocional Semántico basado en IA (Groq Llama-3)
+async function detectEmotionalRiskWithGroq(
+  text: string, 
+  apiKey: string
+): Promise<{ isRisk: boolean; level: 'critical' | 'high' | 'low'; category: string; reasoning: string }> {
+  
+  // Si el texto es extremadamente corto (ej. "hola", "ok"), evitar gastar tokens
+  if (text.trim().length < 4) {
+    return { isRisk: false, level: 'low', category: 'none', reasoning: 'Mensaje demasiado corto' };
   }
 
-  if (/me pegan|me maltratan|abuso|tengo mucho miedo|ataque de panico|crisis/i.test(textLower)) {
-    return { isRisk: true, level: 'high', category: 'crisis' };
-  }
+  try {
+    const prompt = `
+Analiza estrictamente si el siguiente mensaje de un estudiante en un chat educativo/emocional revela un RIESGO GRAVE REAL que requiera activar una alerta escolar urgente.
 
-  return { isRisk: false, level: 'low', category: 'none' };
+CRITERIOS DE EVALUACIÓN:
+- 'critical': Deseos de morir, autolesión explícita o implícita ("no quiero despertar", "me quiero cortar", "sería mejor no existir"), planes de suicidio, desesperanza extrema.
+- 'high': Violencia familiar física/sexual, abuso activo, acoso severo, o crisis de pánico/ansiedad incontrolable.
+- 'low': Desahogo cotidiano (ej: "estoy triste por un examen", "peleé con mi novio", "tengo sueño", "me da miedo hablar en público"). NO ACTIVAR ALERTA PARA 'low'.
+
+Mensaje del estudiante: "${text.replace(/"/g, '\\"')}"
+
+Responde ÚNICAMENTE en JSON con esta estructura exacta (sin formato markdown ni bloques \`\`\`):
+{
+  "isRisk": boolean,
+  "level": "critical" | "high" | "low",
+  "category": "self_harm" | "crisis" | "abuse" | "none",
+  "reasoning": "Explicación breve de 5 palabras en español de por qué es o no un riesgo"
+}`;
+
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.0, // Respuestas 100% deterministas
+        response_format: { type: "json_object" }
+      })
+    });
+
+    if (!res.ok) throw new Error(`Groq Risk Analysis HTTP status ${res.status}`);
+
+    const rawData = await res.json();
+    const resultText = rawData.choices?.[0]?.message?.content || "{}";
+    const parsed = JSON.parse(resultText);
+
+    return {
+      isRisk: Boolean(parsed.isRisk && parsed.level !== 'low'),
+      level: parsed.level || 'low',
+      category: parsed.category || 'none',
+      reasoning: parsed.reasoning || 'Evaluado por IA'
+    };
+
+  } catch (err) {
+    console.warn("[Hey Ely] ⚠️ Falló la evaluación por IA de riesgo. Usando fallback básico por patrones:", err);
+    
+    // Fallback de seguridad si falla la API de Groq
+    const textLower = text.toLowerCase();
+    if (/suicid|matarm|quitarme la vida|no quiero vivir|cortarm|desaparecer/i.test(textLower)) {
+      return { isRisk: true, level: 'critical', category: 'self_harm', reasoning: 'Coincidencia con patrón crítico' };
+    }
+    return { isRisk: false, level: 'low', category: 'none', reasoning: 'Sin riesgo detectable' };
+  }
 }
 
 interface GroqResponse {
