@@ -4,7 +4,7 @@ import { EmergencyButton } from "@/components/emergency-button";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { Home, MessageCircle, Target, Gamepad2, BookOpen, User, Sparkles, PawPrint, BarChart3, Users, ClipboardList, Bell, LogOut } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const studentNav = [
@@ -37,6 +37,9 @@ export function AppShell({ children, admin = false }: { children?: ReactNode; ad
   const navigate = useNavigate();
   const loc = useLocation();
   const qc = useQueryClient();
+
+  // Comprobar si estamos en la pantalla del chat
+  const isChatRoute = loc.pathname === "/app/chat";
 
   // Traer mascota activa para mostrarla globalmente
   const { data: petData } = useQuery({
@@ -83,13 +86,13 @@ export function AppShell({ children, admin = false }: { children?: ReactNode; ad
               );
             })}
           </nav>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2.5 sm:gap-3">
             {profile && (
-              <div className="hidden sm:flex items-center gap-2.5 bg-secondary/50 px-3 py-1 rounded-full border border-border/50">
-                <span className="text-xl leading-none" title="Tu mascota activa">
+              <div className="flex items-center gap-2 bg-secondary/50 px-2.5 sm:px-3 py-1 rounded-full border border-border/50">
+                <span className="text-lg sm:text-xl leading-none" title="Tu mascota activa">
                   {PET_EMOJIS[petData || "ely"] || "🐘"}
                 </span>
-                <div className="flex flex-col text-right leading-tight">
+                <div className="hidden sm:flex flex-col text-right leading-tight">
                   <span className="text-xs font-bold text-foreground">{profile.full_name.split(" ")[0]}</span>
                   <span className="text-[10px] text-muted-foreground font-semibold">Nivel {profile.level} · {profile.xp} XP</span>
                 </div>
@@ -126,7 +129,10 @@ export function AppShell({ children, admin = false }: { children?: ReactNode; ad
         </div>
       </nav>
 
-      <EmergencyButton />
+      {/* Oculto en chat solo en móviles (hidden), visible en PC (md:block) */}
+      <div className={isChatRoute ? "hidden md:block" : "block"}>
+        <EmergencyButton />
+      </div>
     </div>
   );
 }
