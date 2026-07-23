@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { toast } from "sonner";
@@ -9,7 +9,7 @@ export const Route = createFileRoute("/app/juegos/conexion")({
   component: ConexionGame,
 });
 
-const DILEMAS = [
+const ALL_DILEMAS = [
   {
     id: 1,
     situacion: "Un compañero está solo en el descanso y se ve triste.",
@@ -37,16 +37,109 @@ const DILEMAS = [
       { texto: "No hacer nada porque no es tu problema.", esCorrecta: false },
     ],
   },
+  {
+    id: 4,
+    situacion: "Alguien en clase comete un error al responder una pregunta y todos se ríen.",
+    opciones: [
+      { texto: "Reírte también para no quedar como el único serio.", esCorrecta: false },
+      { texto: "No reírte y hacerle un gesto de apoyo o cambiar el tema.", esCorrecta: true },
+      { texto: "Grabar la situación para compartirla.", esCorrecta: false },
+    ],
+  },
+  {
+    id: 5,
+    situacion: "Un amigo te cuenta un secreto sobre algo que lo tiene sufriendo mucho.",
+    opciones: [
+      { texto: "Escucharlo con atención y sugerirle buscar ayuda de un adulto de confianza.", esCorrecta: true },
+      { texto: "Contárselo inmediatamente a todos los demás.", esCorrecta: false },
+      { texto: "Decirle que exagerado y no prestarle atención.", esCorrecta: false },
+    ],
+  },
+  {
+    id: 6,
+    situacion: "Ves que a un compañero se le cayeron todos sus cuadernos al suelo.",
+    opciones: [
+      { texto: "Pasarle por encima e ignorarlo.", esCorrecta: false },
+      { texto: "Ayudarlo a recogerlos de inmediato.", esCorrecta: true },
+      { texto: "Tomarle una foto para hacer un meme.", esCorrecta: false },
+    ],
+  },
+  {
+    id: 7,
+    situacion: "Alguien tiene una opinión totalmente diferente a la tuya sobre un tema.",
+    opciones: [
+      { texto: "Insultarlo por pensar distinto.", esCorrecta: false },
+      { texto: "Escuchar su punto de vista con respeto aunque no estés de acuerdo.", esCorrecta: true },
+      { texto: "Obligarlo a cambiar de opinión.", esCorrecta: false },
+    ],
+  },
+  {
+    id: 8,
+    situacion: "Un integrante de tu grupo está teniendo dificultades para entender su parte del proyecto.",
+    opciones: [
+      { texto: "Ofrecerte a explicarle o ayudarle a repasarlo juntos.", esCorrecta: true },
+      { texto: "Sacarlo del grupo sin avisarle al profesor.", esCorrecta: false },
+      { texto: "Burlarte de él por no entender.", esCorrecta: false },
+    ],
+  },
+  {
+    id: 9,
+    situacion: "Te das cuenta de que dijiste un comentario que hirió los sentimientos de alguien.",
+    opciones: [
+      { texto: "Decirle que es demasiado sensible y no darle importancia.", esCorrecta: false },
+      { texto: "Disculparte sinceramente y asegurarte de no repetirlo.", esCorrecta: true },
+      { texto: "Fingir que nunca dijiste nada.", esCorrecta: false },
+    ],
+  },
+  {
+    id: 10,
+    situacion: "Un compañero nuevo acaba de llegar al colegio y no conoce a nadie.",
+    opciones: [
+      { texto: "Esperar a que él hable primero con alguien.", esCorrecta: false },
+      { texto: "Presentarte y mostrarle las instalaciones del colegio.", esCorrecta: true },
+      { texto: "Evitar hablarle porque no lo conoces.", esCorrecta: false },
+    ],
+  },
+  {
+    id: 11,
+    situacion: "Tu mejor amigo ganó un premio que tú también querías ganar.",
+    opciones: [
+      { texto: "Felicitarlo de corazón y reconocer su esfuerzo.", esCorrecta: true },
+      { texto: "Enojarte con él y dejar de hablarle.", esCorrecta: false },
+      { texto: "Decir que el concurso estuvo arreglado.", esCorrecta: false },
+    ],
+  },
+  {
+    id: 12,
+    situacion: "Alguien en el grupo de chat está enviando mensajes agresivos a un compañero.",
+    opciones: [
+      { texto: "Seguir la corriente y enviar emojis de risa.", esCorrecta: false },
+      { texto: "Pedir que se detenga el trato agresivo o avisar a un moderador/adulto.", esCorrecta: true },
+      { texto: "Salirte del grupo y no decir nada a nadie.", esCorrecta: false },
+    ],
+  },
 ];
+
+// Función para obtener 6 dilemas aleatorios
+function getRandomDilemas() {
+  const shuffled = [...ALL_DILEMAS].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 6);
+}
 
 function ConexionGame() {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
 
+  const [activeDilemas, setActiveDilemas] = useState<typeof ALL_DILEMAS>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [correctos, setCorrectos] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
+
+  // Cargar 6 dilemas al iniciar
+  useEffect(() => {
+    setActiveDilemas(getRandomDilemas());
+  }, []);
 
   async function handleOption(esCorrecta: boolean) {
     if (esCorrecta) {
@@ -57,7 +150,7 @@ function ConexionGame() {
     }
 
     const siguiente = currentIndex + 1;
-    if (siguiente < DILEMAS.length) {
+    if (siguiente < activeDilemas.length) {
       setCurrentIndex(siguiente);
     } else {
       finishGame(correctos + (esCorrecta ? 1 : 0));
@@ -66,7 +159,7 @@ function ConexionGame() {
 
   async function finishGame(scoreFinal: number) {
     setGameOver(true);
-    const xp = scoreFinal * 10; // Hasta 30 XP
+    const xp = scoreFinal * 5; // Hasta 30 XP (5 XP por acierto)
     setXpEarned(xp);
 
     if (user && profile && xp > 0) {
@@ -87,13 +180,16 @@ function ConexionGame() {
   }
 
   function resetGame() {
+    setActiveDilemas(getRandomDilemas());
     setCurrentIndex(0);
     setCorrectos(0);
     setGameOver(false);
     setXpEarned(0);
   }
 
-  const dilema = DILEMAS[currentIndex];
+  if (activeDilemas.length === 0) return null;
+
+  const dilema = activeDilemas[currentIndex];
 
   return (
     <div className="max-w-xl mx-auto space-y-4">
@@ -113,7 +209,7 @@ function ConexionGame() {
       {!gameOver ? (
         <div className="card-soft p-6 border rounded-2xl bg-card space-y-6">
           <div className="flex justify-between items-center text-xs font-bold text-muted-foreground">
-            <span>Dilema {currentIndex + 1} de {DILEMAS.length}</span>
+            <span>Dilema {currentIndex + 1} de {activeDilemas.length}</span>
             <span>Aciertos: {correctos}</span>
           </div>
 
@@ -139,7 +235,7 @@ function ConexionGame() {
           <Trophy className="w-12 h-12 text-amber-400 mx-auto" />
           <h2 className="text-2xl font-extrabold">¡Líder Empático!</h2>
           <p className="text-sm text-muted-foreground">
-            Resolviste correctamente <span className="font-bold text-foreground">{correctos}/{DILEMAS.length}</span> dilemas sociales.
+            Resolviste correctamente <span className="font-bold text-foreground">{correctos}/{activeDilemas.length}</span> dilemas sociales.
           </p>
           <div className="text-lg font-bold text-purple-400">+{xpEarned} XP Obtendidos</div>
           <button

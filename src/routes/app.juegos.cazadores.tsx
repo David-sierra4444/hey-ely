@@ -9,9 +9,12 @@ export const Route = createFileRoute('/app/juegos/cazadores')({
   component: RouteComponent,
 });
 
+// Lista ampliada con 18 pensamientos/cargas emocionales
 const NEGATIVE_THOUGHTS = [
   "Estrés", "Miedo", "Ansiedad", "Dudas", "Cansancio", 
-  "Frustración", "Enojo", "Preocupación", "Presión"
+  "Frustración", "Enojo", "Preocupación", "Presión", "Tristeza",
+  "Inseguridad", "Saturación", "Angustia", "Aislamiento", "Culpa",
+  "Pérdida de control", "Bloqueo", "Desánimo"
 ];
 
 type Bubble = {
@@ -52,19 +55,26 @@ function RouteComponent() {
     return () => clearInterval(timer);
   }, [isPlaying, timeLeft]);
 
+  // Generador de burbujas manteniendo siempre un máximo de 6 en pantalla
   useEffect(() => {
     if (!isPlaying) return;
 
     const interval = setInterval(() => {
-      const newBubble: Bubble = {
-        id: Date.now() + Math.random(),
-        word: NEGATIVE_THOUGHTS[Math.floor(Math.random() * NEGATIVE_THOUGHTS.length)],
-        x: Math.floor(Math.random() * 75) + 10,
-        speed: Math.random() * 1.5 + 1,
-        y: 100,
-      };
-      setBubbles((prev) => [...prev.slice(-8), newBubble]);
-    }, 800);
+      setBubbles((prev) => {
+        // Si ya hay 6 burbujas en pantalla, no genera más
+        if (prev.length >= 6) return prev;
+
+        const newBubble: Bubble = {
+          id: Date.now() + Math.random(),
+          word: NEGATIVE_THOUGHTS[Math.floor(Math.random() * NEGATIVE_THOUGHTS.length)],
+          x: Math.floor(Math.random() * 75) + 10,
+          speed: Math.random() * 1.5 + 1,
+          y: 100,
+        };
+
+        return [...prev, newBubble];
+      });
+    }, 600);
 
     return () => clearInterval(interval);
   }, [isPlaying]);

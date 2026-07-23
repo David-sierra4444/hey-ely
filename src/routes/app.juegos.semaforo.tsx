@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { toast } from "sonner";
@@ -9,26 +9,44 @@ export const Route = createFileRoute("/app/juegos/semaforo")({
   component: SemaforoGame,
 });
 
-const CASOS = [
+const ALL_CASOS = [
   { id: 1, texto: "Sientes un impulso de gritarle a alguien por coraje.", tipo: "rojo" },
   { id: 2, texto: "Te sientes abrumado/a por tantas tareas pendientes.", tipo: "amarillo" },
   { id: 3, texto: "Estás respirando con calma y concentrado/a en tu clase.", tipo: "verde" },
   { id: 4, texto: "Tienes miedo intenso antes de pasar a exponer frente a todos.", tipo: "rojo" },
   { id: 5, texto: "Dudas sobre si hiciste bien un ejercicio, pero quieres revisarlo.", tipo: "amarillo" },
   { id: 6, texto: "Disfrutas un momento agradable conversando con un amigo.", tipo: "verde" },
+  { id: 7, texto: "Sientes rabia porque perdiste un juego importante.", tipo: "rojo" },
+  { id: 8, texto: "Estás inseguro/a sobre cómo expresarle algo a un compañero.", tipo: "amarillo" },
+  { id: 9, texto: "Te sientes motivado/a y alegre haciendo algo que te apasiona.", tipo: "verde" },
+  { id: 10, texto: "Estás a punto de reaccionar agresivamente a un comentario ofensivo.", tipo: "rojo" },
+  { id: 11, texto: "Te da nervios hablar con alguien nuevo pero quieres intentarlo.", tipo: "amarillo" },
+  { id: 12, texto: "Estás relajado/a escuchando música o leyendo un libro.", tipo: "verde" },
 ];
+
+// Función para seleccionar 6 casos aleatorios
+function getRandomCasos() {
+  const shuffled = [...ALL_CASOS].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 6);
+}
 
 function SemaforoGame() {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
 
+  const [activeCasos, setActiveCasos] = useState<typeof ALL_CASOS>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [correctos, setCorrectos] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
 
+  // Cargar 6 casos aleatorios al montar el componente
+  useEffect(() => {
+    setActiveCasos(getRandomCasos());
+  }, []);
+
   async function handleChoice(categoriaElegida: string) {
-    const casoActual = CASOS[currentIndex];
+    const casoActual = activeCasos[currentIndex];
     const esAcerto = categoriaElegida === casoActual.tipo;
 
     if (esAcerto) {
@@ -39,7 +57,7 @@ function SemaforoGame() {
     }
 
     const siguiente = currentIndex + 1;
-    if (siguiente < CASOS.length) {
+    if (siguiente < activeCasos.length) {
       setCurrentIndex(siguiente);
     } else {
       finishGame(correctos + (esAcerto ? 1 : 0));
@@ -48,7 +66,7 @@ function SemaforoGame() {
 
   async function finishGame(scoreFinal: number) {
     setGameOver(true);
-    const xp = scoreFinal * 5; // Hasta 30 XP
+    const xp = scoreFinal * 5; // Hasta 30 XP (5 XP por acierto)
     setXpEarned(xp);
 
     if (user && profile && xp > 0) {
@@ -69,13 +87,16 @@ function SemaforoGame() {
   }
 
   function resetGame() {
+    setActiveCasos(getRandomCasos());
     setCurrentIndex(0);
     setCorrectos(0);
     setGameOver(false);
     setXpEarned(0);
   }
 
-  const caso = CASOS[currentIndex];
+  if (activeCasos.length === 0) return null;
+
+  const caso = activeCasos[currentIndex];
 
   return (
     <div className="max-w-xl mx-auto space-y-4">
@@ -95,7 +116,7 @@ function SemaforoGame() {
       {!gameOver ? (
         <div className="card-soft p-6 border rounded-2xl bg-card space-y-6">
           <div className="flex justify-between items-center text-xs font-bold text-muted-foreground">
-            <span>Caso {currentIndex + 1} de {CASOS.length}</span>
+            <span>Caso {currentIndex + 1} de {activeCasos.length}</span>
             <span>Aciertos: {correctos}</span>
           </div>
 
@@ -134,7 +155,7 @@ function SemaforoGame() {
           <Trophy className="w-12 h-12 text-amber-400 mx-auto" />
           <h2 className="text-2xl font-extrabold">¡Semáforo Dominado!</h2>
           <p className="text-sm text-muted-foreground">
-            Clasificaste correctamente <span className="font-bold text-foreground">{correctos}/{CASOS.length}</span> situaciones.
+            Clasificaste correctamente <span className="font-bold text-foreground">{correctos}/{activeCasos.length}</span> situaciones.
           </p>
           <div className="text-lg font-bold text-purple-400">+{xpEarned} XP Obtendidos</div>
           <button

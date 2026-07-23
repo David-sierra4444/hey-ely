@@ -1,15 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { toast } from "sonner";
-import { Sparkles, Trophy, RotateCcw, Heart } from "lucide-react";
+import { Trophy, RotateCcw, Heart } from "lucide-react";
 
 export const Route = createFileRoute("/app/juegos/gratitud")({
   component: GratitudGame,
 });
 
-const PREGUNTAS_GRATITUD = [
+const ALL_PREGUNTAS_GRATITUD = [
   {
     id: 1,
     pregunta: "¿Qué detalle pequeño te hizo sonreír hoy?",
@@ -25,7 +25,7 @@ const PREGUNTAS_GRATITUD = [
     opciones: [
       { texto: "A nadie en particular.", esValida: false },
       { texto: "A un amigo o familiar que me apoya y escucha.", esValida: true },
-      { texto: "A quienes me critican.", esValida: false },
+      { texto: "A quienes me critican desconstructivamente.", esValida: false },
     ],
   },
   {
@@ -37,16 +37,109 @@ const PREGUNTAS_GRATITUD = [
       { texto: "Que puedo ganarle a los demás fácilmente.", esValida: false },
     ],
   },
+  {
+    id: 4,
+    pregunta: "¿Qué espacio físico o lugar te hace sentir seguro y tranquilo?",
+    opciones: [
+      { texto: "Ningún lugar me hace sentir bien.", esValida: false },
+      { texto: "Mi habitación, un parque o un rincón acogedor.", esValida: true },
+      { texto: "Lugares donde pueda esconderme de todos.", esValida: false },
+    ],
+  },
+  {
+    id: 5,
+    pregunta: "¿Qué oportunidad reciente valoras mucho haber tenido?",
+    opciones: [
+      { texto: "Aprender algo nuevo o compartir tiempo con amigos.", esValida: true },
+      { texto: "Desperdiciar el tiempo sin hacer nada útil.", esValida: false },
+      { texto: "Ninguna, la vida no da oportunidades.", esValida: false },
+    ],
+  },
+  {
+    id: 6,
+    pregunta: "¿Qué aspecto de tu salud o cuerpo agradeces hoy?",
+    opciones: [
+      { texto: "Estar con energía y que mi cuerpo me permita moverme.", esValida: true },
+      { texto: "Solo me enfoco en las cosas que no me gustan.", esValida: false },
+      { texto: "Nada, mi cuerpo no hace nada especial.", esValida: false },
+    ],
+  },
+  {
+    id: 7,
+    pregunta: "¿Qué enseñanza valiosa te dejó un momento difícil del pasado?",
+    opciones: [
+      { texto: "Que soy más fuerte de lo que creía y puedo adaptarme.", esValida: true },
+      { texto: "Que nunca debo confiar en nadie jamás.", esValida: false },
+      { texto: "Que los problemas nunca se superan.", esValida: false },
+    ],
+  },
+  {
+    id: 8,
+    pregunta: "¿Qué expresión de amabilidad recibiste o diste recientemente?",
+    opciones: [
+      { texto: "Un saludo cordial, un abrazo o un 'gracias'.", esValida: true },
+      { texto: "Exigirle a los demás que hagan cosas por mí.", esValida: false },
+      { texto: "Ignorar a los demás cuando intentan ayudar.", esValida: false },
+    ],
+  },
+  {
+    id: 9,
+    pregunta: "¿Qué elemento de la naturaleza disfrutaste o puedes apreciar hoy?",
+    opciones: [
+      { texto: "La luz del sol, la lluvia, el aire fresco o los árboles.", esValida: true },
+      { texto: "La naturaleza me da totalmente igual.", esValida: false },
+      { texto: "Nada de eso genera ningún impacto en mi bienestar.", esValida: false },
+    ],
+  },
+  {
+    id: 10,
+    pregunta: "¿Qué pasatiempo o actividad te reconecta con tu alegría?",
+    opciones: [
+      { texto: "Escuchar música, dibujar, hacer deporte o leer.", esValida: true },
+      { texto: "Quejarme continuamente de las actividades que hago.", esValida: false },
+      { texto: "No hay nada en absoluto que me entretenga.", esValida: false },
+    ],
+  },
+  {
+    id: 11,
+    pregunta: "¿Por qué recurso diario te sientes afortunado de tener?",
+    opciones: [
+      { texto: "Comida caliente, agua limpia y un techo donde descansar.", esValida: true },
+      { texto: "Tener cosas costosas para presumir.", esValida: false },
+      { texto: "No hay nada básico que sea digno de agradecer.", esValida: false },
+    ],
+  },
+  {
+    id: 12,
+    pregunta: "¿Qué recuerdo feliz te llena de nostalgia positiva al recordarlo?",
+    opciones: [
+      { texto: "Una salida divertida, una risa compartida o una meta lograda.", esValida: true },
+      { texto: "Prefiero no recordar ningún momento pasado.", esValida: false },
+      { texto: "Los recuerdos bonitos no sirven para nada.", esValida: false },
+    ],
+  },
 ];
+
+// Función para obtener 6 preguntas aleatorias
+function getRandomPreguntas() {
+  const shuffled = [...ALL_PREGUNTAS_GRATITUD].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, 6);
+}
 
 function GratitudGame() {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
 
+  const [activePreguntas, setActivePreguntas] = useState<typeof ALL_PREGUNTAS_GRATITUD>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [correctos, setCorrectos] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
+
+  // Cargar 6 preguntas aleatorias al montar el componente
+  useEffect(() => {
+    setActivePreguntas(getRandomPreguntas());
+  }, []);
 
   async function handleOption(esValida: boolean) {
     if (esValida) {
@@ -57,7 +150,7 @@ function GratitudGame() {
     }
 
     const siguiente = currentIndex + 1;
-    if (siguiente < PREGUNTAS_GRATITUD.length) {
+    if (siguiente < activePreguntas.length) {
       setCurrentIndex(siguiente);
     } else {
       finishGame(correctos + (esValida ? 1 : 0));
@@ -66,7 +159,7 @@ function GratitudGame() {
 
   async function finishGame(scoreFinal: number) {
     setGameOver(true);
-    const xp = scoreFinal * 10; // Hasta 30 XP
+    const xp = scoreFinal * 5; // Hasta 30 XP (5 XP por acierto)
     setXpEarned(xp);
 
     if (user && profile && xp > 0) {
@@ -87,13 +180,16 @@ function GratitudGame() {
   }
 
   function resetGame() {
+    setActivePreguntas(getRandomPreguntas());
     setCurrentIndex(0);
     setCorrectos(0);
     setGameOver(false);
     setXpEarned(0);
   }
 
-  const item = PREGUNTAS_GRATITUD[currentIndex];
+  if (activePreguntas.length === 0) return null;
+
+  const item = activePreguntas[currentIndex];
 
   return (
     <div className="max-w-xl mx-auto space-y-4">
@@ -113,7 +209,7 @@ function GratitudGame() {
       {!gameOver ? (
         <div className="card-soft p-6 border rounded-2xl bg-card space-y-6">
           <div className="flex justify-between items-center text-xs font-bold text-muted-foreground">
-            <span>Reflexión {currentIndex + 1} de {PREGUNTAS_GRATITUD.length}</span>
+            <span>Reflexión {currentIndex + 1} de {activePreguntas.length}</span>
             <span>Aciertos: {correctos}</span>
           </div>
 
@@ -139,7 +235,7 @@ function GratitudGame() {
           <Trophy className="w-12 h-12 text-amber-400 mx-auto" />
           <h2 className="text-2xl font-extrabold">¡Corazón Agradecido!</h2>
           <p className="text-sm text-muted-foreground">
-            Completaste el circuito de gratitud reflexionando en <span className="font-bold text-foreground">{correctos}/{PREGUNTAS_GRATITUD.length}</span> aspectos clave.
+            Completaste el circuito de gratitud reflexionando en <span className="font-bold text-foreground">{correctos}/{activePreguntas.length}</span> aspectos clave.
           </p>
           <div className="text-lg font-bold text-purple-400">+{xpEarned} XP Obtendidos</div>
           <button
