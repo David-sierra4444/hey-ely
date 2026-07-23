@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
-import { Sparkles, Heart, Users, ShieldCheck, Compass, Smile } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Sparkles, Heart, Users, ShieldCheck, Compass } from "lucide-react";
+import { useSession, useProfile } from "@/lib/session";
+import { completarMisionPorTitulo } from "@/lib/missions"; // 👈 Importación integrada
 
 export const Route = createFileRoute("/app/recursos")({ component: Resources });
 
@@ -34,8 +36,18 @@ const ELY_WISDOM_FACTS = [
 ];
 
 function Resources() {
+  const { user } = useSession();
+  const { profile } = useProfile(user?.id);
+
   const [cat, setCat] = useState<string>("Todos");
   const [activeFact, setActiveFact] = useState<number>(0);
+
+  // 🎯 MARCAR MISIÓN DE EXPLORACIÓN DE RECURSOS
+  useEffect(() => {
+    if (user && profile) {
+      completarMisionPorTitulo(user.id, profile.xp, "Biblioteca");
+    }
+  }, [user, profile]);
 
   const { data } = useQuery({
     queryKey: ["resources"],
@@ -140,7 +152,7 @@ function Resources() {
           </details>
         )}
 
-        {/* 🧠 DESPLEGABLE: SABIDURÍA DE LA MANADA (Mismo Estilo) */}
+        {/* 🧠 DESPLEGABLE: SABIDURÍA DE LA MANADA */}
         {(cat === "Todos" || cat === "Sabiduría de la Manada 🧠") && (
           <details 
             open={cat === "Sabiduría de la Manada 🧠"} 
@@ -182,7 +194,7 @@ function Resources() {
                     <button
                       key={idx}
                       onClick={(e) => {
-                        e.preventDefault(); // Evita cerrar el details al hacer clic
+                        e.preventDefault();
                         setActiveFact(idx);
                       }}
                       className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between cursor-pointer ${
@@ -215,7 +227,7 @@ function Resources() {
           </details>
         )}
 
-        {/* 📚 ARTÍCULOS DE SUPABASE (Filtrados correctamente sin duplicarse arriba) */}
+        {/* 📚 ARTÍCULOS DE SUPABASE */}
         <div className="grid md:grid-cols-2 gap-3 pt-2">
           {filtered?.map((r: any) => (
             <details key={r.id} className="card-soft p-5 border rounded-2xl bg-card transition-all shadow-xs group">

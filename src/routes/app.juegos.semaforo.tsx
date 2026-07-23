@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { toast } from "sonner";
 import { ShieldAlert, AlertTriangle, CheckCircle2, Trophy, RotateCcw } from "lucide-react";
+import { completarMisionPorTitulo } from "@/lib/missions"; // 👈 Importación agregada
 
 export const Route = createFileRoute("/app/juegos/semaforo")({
   component: SemaforoGame,
@@ -24,7 +25,6 @@ const ALL_CASOS = [
   { id: 12, texto: "Estás relajado/a escuchando música o leyendo un libro.", tipo: "verde" },
 ];
 
-// Función para seleccionar 6 casos aleatorios
 function getRandomCasos() {
   const shuffled = [...ALL_CASOS].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 6);
@@ -40,7 +40,6 @@ function SemaforoGame() {
   const [gameOver, setGameOver] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
 
-  // Cargar 6 casos aleatorios al montar el componente
   useEffect(() => {
     setActiveCasos(getRandomCasos());
   }, []);
@@ -66,21 +65,26 @@ function SemaforoGame() {
 
   async function finishGame(scoreFinal: number) {
     setGameOver(true);
-    const xp = scoreFinal * 5; // Hasta 30 XP (5 XP por acierto)
+    const xp = scoreFinal * 5;
     setXpEarned(xp);
 
-    if (user && profile && xp > 0) {
-      await supabase.from("game_sessions").insert({
-        user_id: user.id,
-        game_key: "semaforo",
-        score: scoreFinal,
-        xp_earned: xp,
-      });
+    if (user && profile) {
+      if (xp > 0) {
+        await supabase.from("game_sessions").insert({
+          user_id: user.id,
+          game_key: "semaforo",
+          score: scoreFinal,
+          xp_earned: xp,
+        });
 
-      await supabase
-        .from("profiles")
-        .update({ xp: profile.xp + xp })
-        .eq("id", user.id);
+        await supabase
+          .from("profiles")
+          .update({ xp: profile.xp + xp })
+          .eq("id", user.id);
+      }
+
+      // 🎯 COMPLETAR LA MISIÓN DEL SEMÁFORO
+      await completarMisionPorTitulo(user.id, profile.xp, "Semáforo");
 
       toast.success(`✨ ¡Juego completado! +${xp} XP ganados.`);
     }

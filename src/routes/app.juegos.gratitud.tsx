@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { toast } from "sonner";
 import { Trophy, RotateCcw, Heart } from "lucide-react";
+import { completarMisionPorTitulo } from "@/lib/missions"; // 👈 Importación integrada
 
 export const Route = createFileRoute("/app/juegos/gratitud")({
   component: GratitudGame,
@@ -120,7 +121,6 @@ const ALL_PREGUNTAS_GRATITUD = [
   },
 ];
 
-// Función para obtener 6 preguntas aleatorias
 function getRandomPreguntas() {
   const shuffled = [...ALL_PREGUNTAS_GRATITUD].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 6);
@@ -136,7 +136,6 @@ function GratitudGame() {
   const [gameOver, setGameOver] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
 
-  // Cargar 6 preguntas aleatorias al montar el componente
   useEffect(() => {
     setActivePreguntas(getRandomPreguntas());
   }, []);
@@ -159,21 +158,26 @@ function GratitudGame() {
 
   async function finishGame(scoreFinal: number) {
     setGameOver(true);
-    const xp = scoreFinal * 5; // Hasta 30 XP (5 XP por acierto)
+    const xp = scoreFinal * 5;
     setXpEarned(xp);
 
-    if (user && profile && xp > 0) {
-      await supabase.from("game_sessions").insert({
-        user_id: user.id,
-        game_key: "gratitud",
-        score: scoreFinal,
-        xp_earned: xp,
-      });
+    if (user && profile) {
+      if (xp > 0) {
+        await supabase.from("game_sessions").insert({
+          user_id: user.id,
+          game_key: "gratitud",
+          score: scoreFinal,
+          xp_earned: xp,
+        });
 
-      await supabase
-        .from("profiles")
-        .update({ xp: profile.xp + xp })
-        .eq("id", user.id);
+        await supabase
+          .from("profiles")
+          .update({ xp: profile.xp + xp })
+          .eq("id", user.id);
+      }
+
+      // 🎯 COMPLETAR LA MISIÓN DE GRATITUD
+      await completarMisionPorTitulo(user.id, profile.xp, "Gratitud");
 
       toast.success(`✨ ¡Espíritu de gratitud expandido! +${xp} XP ganados.`);
     }
@@ -223,7 +227,7 @@ function GratitudGame() {
               <button
                 key={idx}
                 onClick={() => handleOption(op.esValida)}
-                className="w-full text-left p-3.5 rounded-xl border border-border bg-background hover:bg-secondary/80 text-xs font-semibold transition"
+                className="w-full text-left p-3.5 rounded-xl border border-border bg-background hover:bg-secondary/80 text-xs font-semibold transition cursor-pointer"
               >
                 {op.texto}
               </button>
@@ -240,7 +244,7 @@ function GratitudGame() {
           <div className="text-lg font-bold text-purple-400">+{xpEarned} XP Obtendidos</div>
           <button
             onClick={resetGame}
-            className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 font-bold text-xs"
+            className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 font-bold text-xs cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" /> Jugar de nuevo
           </button>

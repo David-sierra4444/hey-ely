@@ -5,6 +5,7 @@ import { useSession, useProfile } from "@/lib/session";
 import { ElyMascot } from "@/components/brand";
 import { Send, AlertCircle, Sparkles, HeartPulse } from "lucide-react";
 import { toast } from "sonner";
+import { completarMisionPorTitulo } from "@/lib/missions";
 
 export const Route = createFileRoute("/app/chat")({ component: ChatPage });
 
@@ -69,6 +70,12 @@ function ChatPage() {
     setInput("");
     setSending(true);
 
+    // 🎯 COMPLETAR MISIOGRAMAS AL INTERACTUAR CON ELY
+    if (profile) {
+      completarMisionPorTitulo(user.id, profile.xp, "Salúdame hoy");
+      completarMisionPorTitulo(user.id, profile.xp, "Identificar emociones"); // 👈 Misión agregada
+    }
+
     try {
       await supabase
         .from("chat_messages")
@@ -116,10 +123,9 @@ function ChatPage() {
   }
 
   return (
-    /* Contenedor padre con altura fija y sin desbordamiento externo */
     <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-10rem)] md:h-[calc(100vh-7rem)] overflow-hidden">
       
-      {/* 1. Cabecera fija (shrink-0 asegura que no cambie de tamaño) */}
+      {/* 1. Cabecera fija */}
       <div className="shrink-0 card-soft p-3.5 md:p-4 flex items-center gap-3.5 bg-gradient-to-r from-purple-500/10 via-indigo-500/5 to-transparent border border-purple-500/20 shadow-xs rounded-2xl mb-3">
         <div className="relative shrink-0">
           <ElyMascot className="w-12 h-12 md:w-14 md:h-14 drop-shadow-sm" />
@@ -139,7 +145,7 @@ function ChatPage() {
         </div>
       </div>
 
-      {/* 2. Zona con scroll interno dinámico (min-h-0 es clave en flexbox) */}
+      {/* 2. Zona con scroll interno dinámico */}
       <div 
         ref={chatScrollRef}
         className="flex-1 min-h-0 overflow-y-auto space-y-4 px-2 py-1 scroll-smooth"
@@ -173,7 +179,7 @@ function ChatPage() {
         )}
       </div>
 
-      {/* 3. Área inferior anclada (shrink-0 garantiza que nunca se mueva ni oculte) */}
+      {/* 3. Área inferior anclada */}
       <div className="shrink-0 pt-3 space-y-2 bg-background border-t border-border/40 mt-2">
         {messages.length <= 2 && !sending && (
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
