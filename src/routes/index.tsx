@@ -131,7 +131,7 @@ function Landing() {
           <LogoMark size={26} />
           
           <div className="font-semibold">
-            © {new Date().getFullYear()} Hey Ely. Todos los derechos reservados.
+            Copyright (c) 2026 Vanesa Martin (YVMC). All rights reserved.
           </div>
         </div>
       </footer>
