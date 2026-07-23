@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { toast } from "sonner";
 import { ShieldCheck, XCircle, Trophy, RotateCcw } from "lucide-react";
+import { completarMisionPorTitulo } from "@/lib/missions"; // 👈 Importación integrada
 
 export const Route = createFileRoute("/app/juegos/escudo")({
   component: EscudoGame,
@@ -24,7 +25,6 @@ const ALL_FRASES = [
   { id: 12, texto: "Si pido ayuda, significa que soy débil.", esPositivo: false },
 ];
 
-// Función para seleccionar 6 frases aleatorias
 function getRandomFrases() {
   const shuffled = [...ALL_FRASES].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 6);
@@ -40,7 +40,6 @@ function EscudoGame() {
   const [gameOver, setGameOver] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
 
-  // Cargar 6 frases aleatorias al montar el juego
   useEffect(() => {
     setActiveFrases(getRandomFrases());
   }, []);
@@ -66,21 +65,26 @@ function EscudoGame() {
 
   async function finishGame(scoreFinal: number) {
     setGameOver(true);
-    const xp = scoreFinal * 5; // Hasta 30 XP (5 XP por acierto)
+    const xp = scoreFinal * 5;
     setXpEarned(xp);
 
-    if (user && profile && xp > 0) {
-      await supabase.from("game_sessions").insert({
-        user_id: user.id,
-        game_key: "escudo",
-        score: scoreFinal,
-        xp_earned: xp,
-      });
+    if (user && profile) {
+      if (xp > 0) {
+        await supabase.from("game_sessions").insert({
+          user_id: user.id,
+          game_key: "escudo",
+          score: scoreFinal,
+          xp_earned: xp,
+        });
 
-      await supabase
-        .from("profiles")
-        .update({ xp: profile.xp + xp })
-        .eq("id", user.id);
+        await supabase
+          .from("profiles")
+          .update({ xp: profile.xp + xp })
+          .eq("id", user.id);
+      }
+
+      // 🎯 COMPLETAR LA MISIÓN DEL ESCUDO
+      await completarMisionPorTitulo(user.id, profile.xp, "Escudo");
 
       toast.success(`✨ ¡Escudo fortalecido! +${xp} XP ganados.`);
     }
@@ -127,7 +131,7 @@ function EscudoGame() {
           <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => handleAnswer(true)}
-              className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-bold text-xs flex flex-col items-center gap-2 transition"
+              className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-bold text-xs flex flex-col items-center gap-2 transition cursor-pointer"
             >
               <ShieldCheck className="w-6 h-6 text-emerald-400" />
               <span>Pensamiento Sanador (Aceptar)</span>
@@ -135,7 +139,7 @@ function EscudoGame() {
 
             <button
               onClick={() => handleAnswer(false)}
-              className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 font-bold text-xs flex flex-col items-center gap-2 transition"
+              className="p-4 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-300 font-bold text-xs flex flex-col items-center gap-2 transition cursor-pointer"
             >
               <XCircle className="w-6 h-6 text-red-400" />
               <span>Pensamiento Nocivo (Rechazar)</span>
@@ -152,7 +156,7 @@ function EscudoGame() {
           <div className="text-lg font-bold text-purple-400">+{xpEarned} XP Obtendidos</div>
           <button
             onClick={resetGame}
-            className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 font-bold text-xs"
+            className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 font-bold text-xs cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" /> Jugar de nuevo
           </button>

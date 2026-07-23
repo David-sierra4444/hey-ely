@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { toast } from "sonner";
 import { Trophy, RotateCcw } from "lucide-react";
+import { completarMisionPorTitulo } from "@/lib/missions"; // 👈 Importación integrada
 
 export const Route = createFileRoute('/app/juegos/cazadores')({
   component: RouteComponent,
@@ -106,18 +107,23 @@ function RouteComponent() {
     const xp = Math.min(30, score * 3);
     setXpEarned(xp);
 
-    if (user && profile && xp > 0) {
-      await supabase.from("game_sessions").insert({
-        user_id: user.id,
-        game_key: "cazadores",
-        score: score,
-        xp_earned: xp,
-      });
+    if (user && profile) {
+      if (xp > 0) {
+        await supabase.from("game_sessions").insert({
+          user_id: user.id,
+          game_key: "cazadores",
+          score: score,
+          xp_earned: xp,
+        });
 
-      await supabase
-        .from("profiles")
-        .update({ xp: profile.xp + xp })
-        .eq("id", user.id);
+        await supabase
+          .from("profiles")
+          .update({ xp: profile.xp + xp })
+          .eq("id", user.id);
+      }
+
+      // 🎯 COMPLETAR LA MISIÓN DEL CAZADOR
+      await completarMisionPorTitulo(user.id, profile.xp, "Cazador");
 
       toast.success(`🎉 ¡Tiempo agotado! +${xp} XP ganados.`);
     }
@@ -147,7 +153,7 @@ function RouteComponent() {
           </p>
           <button
             onClick={startGame}
-            className="rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-8 py-3 text-sm shadow-md hover:scale-105 transition"
+            className="rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold px-8 py-3 text-sm shadow-md hover:scale-105 transition cursor-pointer"
           >
             ¡Empezar a Reventar!
           </button>
@@ -167,7 +173,7 @@ function RouteComponent() {
                 key={b.id}
                 onClick={() => popBubble(b.id)}
                 style={{ left: `${b.x}%`, top: `${b.y}%` }}
-                className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-purple-600/30 hover:bg-purple-500/50 border border-purple-400/50 backdrop-blur-sm text-purple-200 text-xs font-bold px-3 py-2 rounded-full shadow-lg transition-transform active:scale-90 animate-pulse"
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 bg-purple-600/30 hover:bg-purple-500/50 border border-purple-400/50 backdrop-blur-sm text-purple-200 text-xs font-bold px-3 py-2 rounded-full shadow-lg transition-transform active:scale-90 animate-pulse cursor-pointer"
               >
                 🎈 {b.word}
               </button>
@@ -186,7 +192,7 @@ function RouteComponent() {
           <div className="text-lg font-bold text-purple-400">+{xpEarned} XP Obtendidos</div>
           <button
             onClick={startGame}
-            className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 font-bold text-xs"
+            className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 font-bold text-xs cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" /> Jugar otra vez
           </button>

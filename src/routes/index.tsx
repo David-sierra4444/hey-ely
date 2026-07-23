@@ -1,6 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LogoMark, ElyMascot } from "@/components/brand";
 import { Heart, Shield, GraduationCap, ArrowRight } from "lucide-react";
+import { useEffect } from "react";
+import { useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -13,6 +15,27 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const { user, loading } = useSession();
+  const navigate = useNavigate();
+
+  // 🔒 Redirección automática si el usuario ya inició sesión
+  useEffect(() => {
+    if (!loading && user) {
+      navigate({ to: "/app", replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  // 🔴 PANTALLA DE CARGA TEMPORAL: Mientras verifica la sesión para evitar parpadeos
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-3">
+        <div className="text-4xl animate-bounce">🐘</div>
+        <p className="text-sm font-semibold text-muted-foreground animate-pulse">Cargando Hey Ely...</p>
+      </div>
+    );
+  }
+
+  // Si ya se verificó y NO hay sesión iniciada, renderiza la Landing Page normal
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
       
@@ -72,7 +95,7 @@ function Landing() {
                 Mi historia está inspirada en una elefanta que conoció el miedo y el dolor antes de encontrar una nueva oportunidad.
               </p>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-medium">
-                No voy a decirte que entiendo exactamente cómo te sientes, porque cada historia es diferente. Pero sí puedo escucharte, acompañarte y ayudarte a encontrar un camino cuando todo parezca demasiado difícil.
+                No voy a decirte que entiendo exactamente cómo te sientes, porque cada historia es diferente. Pero sí могу escucharte, acompañarte y ayudarte a encontrar un camino cuando todo parezca demasiado difícil.
               </p>
             </div>
 

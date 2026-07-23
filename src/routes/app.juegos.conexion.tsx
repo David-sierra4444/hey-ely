@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession, useProfile } from "@/lib/session";
 import { toast } from "sonner";
 import { HeartHandshake, Trophy, RotateCcw } from "lucide-react";
+import { completarMisionPorTitulo } from "@/lib/missions"; // 👈 Importación integrada
 
 export const Route = createFileRoute("/app/juegos/conexion")({
   component: ConexionGame,
@@ -120,7 +121,6 @@ const ALL_DILEMAS = [
   },
 ];
 
-// Función para obtener 6 dilemas aleatorios
 function getRandomDilemas() {
   const shuffled = [...ALL_DILEMAS].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 6);
@@ -136,7 +136,6 @@ function ConexionGame() {
   const [gameOver, setGameOver] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
 
-  // Cargar 6 dilemas al iniciar
   useEffect(() => {
     setActiveDilemas(getRandomDilemas());
   }, []);
@@ -159,21 +158,26 @@ function ConexionGame() {
 
   async function finishGame(scoreFinal: number) {
     setGameOver(true);
-    const xp = scoreFinal * 5; // Hasta 30 XP (5 XP por acierto)
+    const xp = scoreFinal * 5;
     setXpEarned(xp);
 
-    if (user && profile && xp > 0) {
-      await supabase.from("game_sessions").insert({
-        user_id: user.id,
-        game_key: "conexion",
-        score: scoreFinal,
-        xp_earned: xp,
-      });
+    if (user && profile) {
+      if (xp > 0) {
+        await supabase.from("game_sessions").insert({
+          user_id: user.id,
+          game_key: "conexion",
+          score: scoreFinal,
+          xp_earned: xp,
+        });
 
-      await supabase
-        .from("profiles")
-        .update({ xp: profile.xp + xp })
-        .eq("id", user.id);
+        await supabase
+          .from("profiles")
+          .update({ xp: profile.xp + xp })
+          .eq("id", user.id);
+      }
+
+      // 🎯 COMPLETAR LA MISIÓN DE CONEXIÓN
+      await completarMisionPorTitulo(user.id, profile.xp, "Conexión");
 
       toast.success(`✨ ¡Empatía demostrada! +${xp} XP ganados.`);
     }
@@ -223,7 +227,7 @@ function ConexionGame() {
               <button
                 key={idx}
                 onClick={() => handleOption(op.esCorrecta)}
-                className="w-full text-left p-3.5 rounded-xl border border-border bg-background hover:bg-secondary/80 text-xs font-semibold transition"
+                className="w-full text-left p-3.5 rounded-xl border border-border bg-background hover:bg-secondary/80 text-xs font-semibold transition cursor-pointer"
               >
                 {op.texto}
               </button>
@@ -240,7 +244,7 @@ function ConexionGame() {
           <div className="text-lg font-bold text-purple-400">+{xpEarned} XP Obtendidos</div>
           <button
             onClick={resetGame}
-            className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 font-bold text-xs"
+            className="mt-2 inline-flex items-center gap-2 rounded-full bg-primary text-primary-foreground px-6 py-2.5 font-bold text-xs cursor-pointer"
           >
             <RotateCcw className="w-4 h-4" /> Jugar de nuevo
           </button>
