@@ -14,7 +14,7 @@ import {
   ArrowRight,
   Dog,
   User,
-  FileText // 👈 Icono importado para las encuestas
+  FileText 
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/")({ component: Home });
@@ -63,6 +63,9 @@ function Home() {
   const completedIds = new Set(userProgress?.map((p: any) => p.mission_id) || []);
   const pendingMissions = missions?.filter((m: any) => !completedIds.has(m.id)).slice(0, 3) || [];
 
+  // 🔒 Verificar si el usuario es estudiante
+  const isStudentRole = profile.user_type === "estudiante" || profile.user_type === "student";
+
   return (
     <div className="space-y-6 pb-12 animate-in fade-in duration-500">
       
@@ -103,7 +106,12 @@ function Home() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           <QuickCard to="/app/chat" icon={MessageCircle} title="Hablar con Ely" desc="Estoy aquí para escucharte" color="from-purple-500 to-indigo-600" />
           <QuickCard to="/app/misiones" icon={Target} title="Misiones" desc="Suma XP hoy" color="from-emerald-500 to-teal-600" />
-          <QuickCard to="/app/encuestas" icon={FileText} title="Encuestas" desc="Queremos saber cómo estás" color="from-teal-500 to-emerald-600" /> {/* 👈 Tarjeta agregada */}
+          
+          {/* 🔒 Tarjeta de Encuestas condicional: Solo visible para estudiantes */}
+          {isStudentRole && (
+            <QuickCard to="/app/encuestas" icon={FileText} title="Encuestas" desc="Queremos saber cómo estás" color="from-teal-500 to-emerald-600" />
+          )}
+
           <QuickCard to="/app/juegos" icon={Gamepad2} title="Jugar" desc="Aprende jugando" color="from-blue-500 to-cyan-600" />
           <QuickCard to="/app/mascota" icon={Dog} title="Mascota" desc="Cuida de tu compañero" color="from-amber-500 to-orange-500" />
           <QuickCard to="/app/recursos" icon={BookOpen} title="Recursos" desc="Herramientas de apoyo" color="from-yellow-500 to-amber-600" />
