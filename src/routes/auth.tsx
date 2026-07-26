@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { LogoMark, ElyMascot } from "@/components/brand";
 import { toast } from "sonner";
 import { 
-  Search, 
   ArrowLeft, 
   GraduationCap, 
   User, 
@@ -13,7 +12,8 @@ import {
   Loader2, 
   Lock, 
   Mail, 
-  UserCheck 
+  CheckCircle2,
+  Search
 } from "lucide-react";
 
 export const Route = createFileRoute("/auth")({
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type Mode = "signin" | "student" | "admin" | "natural";
+type Mode = "signin" | "student" | "admin" | "natural" | "verify";
 
 function slugify(s: string) {
   return s
@@ -37,6 +37,16 @@ function AuthPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // 1. Escuchar cuando Supabase redirige al usuario tras hacer clic en el correo
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        if (session && session.user.email_confirmed_at) {
+          setMode("verify");
+        }
+      }
+    });
+
+    // 2. Revisar si ya hay una sesión activa al cargar la página
     supabase.auth.getSession().then(async ({ data }) => {
       if (data.session) {
         const { data: p } = await supabase
@@ -44,10 +54,18 @@ function AuthPage() {
           .select("user_type")
           .eq("id", data.session.user.id)
           .maybeSingle();
-        navigate({ to: p?.user_type === "admin" ? "/admin" : "/app" });
+        
+        // Si ya está confirmado, lo enviamos directo a su ruta correspondiente
+        if (data.session.user.email_confirmed_at && mode !== "verify") {
+          navigate({ to: p?.user_type === "admin" ? "/admin" : "/app" });
+        }
       }
     });
-  }, [navigate]);
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [navigate, mode]);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 bg-background text-foreground antialiased selection:bg-primary/15 selection:text-primary relative overflow-x-hidden">
@@ -86,6 +104,7 @@ function AuthPage() {
         <div className="md:col-span-7">
           <div className="p-6 sm:p-8 md:p-10 bg-card/70 backdrop-blur-2xl border border-border/80 rounded-3xl shadow-2xl w-full min-w-0 transition-all">
             {mode === "signin" && <SignIn onSwitch={setMode} />}
+            {mode === "verify" && <EmailVerifiedScreen onContinue={() => navigate({ to: "/app" })} />}
             {mode === "student" && <StudentSignUp onBack={() => setMode("signin")} />}
             {mode === "admin" && <AdminSignUp onBack={() => setMode("signin")} />}
             {mode === "natural" && <NaturalSignUp onBack={() => setMode("signin")} />}
@@ -93,6 +112,31 @@ function AuthPage() {
         </div>
 
       </div>
+    </div>
+  );
+}
+
+// Pantalla cuando el correo ha sido verificado con éxito
+function EmailVerifiedScreen({ onContinue }: { onContinue: () => void }) {
+  return (
+    <div className="space-y-6 text-center py-4">
+      <div className="w-16 h-16 bg-emerald-500/10 text-emerald-600 rounded-3xl mx-auto flex items-center justify-center border border-emerald-500/20 shadow-inner">
+        <CheckCircle2 className="w-8 h-8" />
+      </div>
+
+      <div className="space-y-2">
+        <h2 className="text-2xl font-black tracking-tight text-foreground">¡Correo verificado!</h2>
+        <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+          Tu cuenta ha sido activada correctamente. Ya puedes acceder a todas las herramientas de Ely.
+        </p>
+      </div>
+
+      <button 
+        onClick={onContinue}
+        className="w-full rounded-full bg-foreground text-background py-3.5 text-sm font-bold shadow-md transition-all hover:bg-foreground/90 hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center gap-2"
+      >
+        Entrar a la aplicación
+      </button>
     </div>
   );
 }
@@ -110,6 +154,9 @@ function SignIn({ onSwitch }: { onSwitch: (m: Mode) => void }) {
     
     if (error) {
       setLoading(false);
+      if (error.message.includes("Email not confirmed")) {
+        return toast.error("Por favor, verifica tu correo electrónico antes de ingresar. Revisa tu bandeja de entrada.");
+      }
       return toast.error(error.message);
     }
     
@@ -268,8 +315,8 @@ function StudentSignUp({ onBack }: { onBack: () => void }) {
     await supabase.from("profiles").update({ institution_id: inst.id }).eq("id", data.user.id);
 
     setLoading(false);
-    toast.success(`¡Bienvenido/a, ${f.full_name.split(" ")[0]}!`);
-    navigate({ to: "/app" });
+    toast.success("¡Registro exitoso! Revisa tu correo para verificar tu cuenta.");
+    onBack();
   }
 
   return (
@@ -385,12 +432,6 @@ function StudentSignUp({ onBack }: { onBack: () => void }) {
                   ))}
                 </div>
               )}
-
-              {q.trim() && results.length === 0 && (
-                <div className="text-[11px] text-muted-foreground bg-background p-2.5 rounded-xl border border-border/60 mt-1">
-                  No se encontró la institución. Verifica la ortografía o solicita a tu colegio registrar la cuenta primero.
-                </div>
-              )}
             </>
           )}
         </div>
@@ -409,7 +450,6 @@ function StudentSignUp({ onBack }: { onBack: () => void }) {
 function AdminSignUp({ onBack }: { onBack: () => void }) {
   const [f, setF] = useState({ full_name: "", position: "", institution: "", city: "", department: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); 
@@ -451,8 +491,8 @@ function AdminSignUp({ onBack }: { onBack: () => void }) {
     
     await supabase.from("profiles").update({ institution_id: instRow.id }).eq("id", data.user.id);
     setLoading(false);
-    toast.success("Institución y administrador registrados con éxito");
-    navigate({ to: "/admin" });
+    toast.success("Institución registrada. Revisa tu correo para verificar tu cuenta.");
+    onBack();
   }
 
   return (
@@ -476,7 +516,7 @@ function AdminSignUp({ onBack }: { onBack: () => void }) {
         />
         <input 
           required 
-          placeholder="Cargo (Rector, Psicorientador, Coordinator)" 
+          placeholder="Cargo (Rector, Psicorientador, etc.)" 
           className="w-full rounded-2xl border border-border/80 bg-background/80 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" 
           value={f.position} 
           onChange={(e) => setF({ ...f, position: e.target.value })} 
@@ -538,7 +578,6 @@ function AdminSignUp({ onBack }: { onBack: () => void }) {
 function NaturalSignUp({ onBack }: { onBack: () => void }) {
   const [f, setF] = useState({ full_name: "", age: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); 
@@ -550,8 +589,8 @@ function NaturalSignUp({ onBack }: { onBack: () => void }) {
     });
     setLoading(false);
     if (error || !data.user) return toast.error(error?.message ?? "Error");
-    toast.success(`¡Bienvenido/a, ${f.full_name.split(" ")[0]}!`);
-    navigate({ to: "/app" });
+    toast.success("¡Cuenta creada con éxito! Revisa tu correo para verificarla.");
+    onBack();
   }
 
   return (
