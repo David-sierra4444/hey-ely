@@ -395,6 +395,7 @@ function StudentSignUp({ onBack }: { onBack: () => void }) {
       email: f.email,
       password: f.password,
       options: { 
+        emailRedirectTo: `${window.location.origin}/confirm-email`,
         data: { 
           user_type: "student", 
           full_name: f.full_name, 
@@ -570,7 +571,10 @@ function AdminSignUp({ onBack }: { onBack: () => void }) {
     const { data, error } = await supabase.auth.signUp({
       email: f.email, 
       password: f.password,
-      options: { data: { user_type: "admin", full_name: f.full_name, position: f.position } },
+      options: { 
+        emailRedirectTo: `${window.location.origin}/confirm-email`,
+        data: { user_type: "admin", full_name: f.full_name, position: f.position } 
+      },
     });
     
     if (error || !data.user) { 
@@ -684,10 +688,13 @@ function NaturalSignUp({ onBack }: { onBack: () => void }) {
     const { data, error } = await supabase.auth.signUp({
       email: f.email, 
       password: f.password,
-      options: { data: { user_type: "natural", full_name: f.full_name, age: parseInt(f.age) } },
+      options: { 
+        emailRedirectTo: `${window.location.origin}/confirm-email`,
+        data: { user_type: "natural", full_name: f.full_name, age: parseInt(f.age) } 
+      },
     });
     setLoading(false);
-    if (error || !data.user) return toast.error(error?.message ?? "Error");
+    if (error || !data.user) return toast.error(error?.message ?? "Error en el registro");
     toast.success("¡Cuenta creada con éxito! Revisa tu correo para verificarla.");
     onBack();
   }

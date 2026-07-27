@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as CuentaVerificadaRouteImport } from './routes/cuenta-verificada'
+import { Route as CuentaVerificadaRouteImport } from './routes/confirm-email.tsx'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AdminRouteImport } from './routes/admin'
