@@ -21,7 +21,7 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type Mode = "signin" | "student" | "admin" | "natural" | "verify";
+type Mode = "signin" | "student" | "admin" | "natural" | "verify" | "forgot";
 
 function slugify(s: string) {
   return s
@@ -104,6 +104,7 @@ function AuthPage() {
         <div className="md:col-span-7">
           <div className="p-6 sm:p-8 md:p-10 bg-card/70 backdrop-blur-2xl border border-border/80 rounded-3xl shadow-2xl w-full min-w-0 transition-all">
             {mode === "signin" && <SignIn onSwitch={setMode} />}
+            {mode === "forgot" && <ForgotPassword onBack={() => setMode("signin")} />}
             {mode === "verify" && <EmailVerifiedScreen onContinue={() => navigate({ to: "/app" })} />}
             {mode === "student" && <StudentSignUp onBack={() => setMode("signin")} />}
             {mode === "admin" && <AdminSignUp onBack={() => setMode("signin")} />}
@@ -190,7 +191,16 @@ function SignIn({ onSwitch }: { onSwitch: (m: Mode) => void }) {
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-foreground/80">Contraseña</label>
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold text-foreground/80">Contraseña</label>
+            <button 
+              type="button"
+              onClick={() => onSwitch("forgot")}
+              className="text-xs font-medium text-primary hover:underline transition-all"
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
           <div className="relative">
             <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input 
@@ -266,13 +276,102 @@ function SignIn({ onSwitch }: { onSwitch: (m: Mode) => void }) {
   );
 }
 
+function ForgotPassword({ onBack }: { onBack: () => void }) {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      return toast.error(error.message);
+    }
+
+    setSent(true);
+    toast.success("Correo de recuperación enviado.");
+  }
+
+  if (sent) {
+    return (
+      <div className="space-y-6 text-center py-4">
+        <div className="w-16 h-16 bg-primary/10 text-primary rounded-3xl mx-auto flex items-center justify-center border border-primary/20 shadow-inner">
+          <Mail className="w-8 h-8" />
+        </div>
+
+        <div className="space-y-2">
+          <h2 className="text-2xl font-black tracking-tight text-foreground">Revisa tu correo</h2>
+          <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+            Hemos enviado un enlace para restablecer tu contraseña a <span className="font-semibold text-foreground">{email}</span>.
+          </p>
+        </div>
+
+        <button 
+          onClick={onBack}
+          className="w-full rounded-full bg-foreground text-background py-3.5 text-sm font-bold shadow-md transition-all hover:bg-foreground/90 hover:scale-[1.01] active:scale-[0.98]"
+        >
+          Volver al inicio de sesión
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <button 
+        onClick={onBack} 
+        className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="h-3.5 w-3.5" /> Volver al ingreso
+      </button>
+
+      <div>
+        <h2 className="text-2xl font-black tracking-tight text-foreground">Recuperar contraseña</h2>
+        <p className="text-xs text-muted-foreground mt-1">
+          Ingresa tu correo registrado para recibir las instrucciones de restablecimiento.
+        </p>
+      </div>
+
+      <form onSubmit={submit} className="space-y-4">
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold text-foreground/80">Correo electrónico</label>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input 
+              type="email" 
+              required 
+              placeholder="tu@correo.com" 
+              className="w-full rounded-2xl border border-border/80 bg-background/80 pl-10 pr-4 py-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" 
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+            />
+          </div>
+        </div>
+
+        <button 
+          disabled={loading} 
+          className="w-full rounded-full bg-foreground text-background py-3.5 text-sm font-bold shadow-md disabled:opacity-60 transition-all hover:bg-foreground/90 hover:scale-[1.01] active:scale-[0.98] flex items-center justify-center gap-2 mt-2"
+        >
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enviar correo de recuperación"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 function StudentSignUp({ onBack }: { onBack: () => void }) {
   const [f, setF] = useState({ full_name: "", age: "", grade: "", course: "", email: "", password: "" });
   const [inst, setInst] = useState<{ id: string; name: string; city: string } | null>(null);
   const [q, setQ] = useState(""); 
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!q.trim()) { setResults([]); return; }
