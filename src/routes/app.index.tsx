@@ -1,51 +1,57 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ElyMascot } from "@/components/brand";
 import { useSession, useProfile, computeLevel } from "@/lib/session";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from "react";
 import { 
   MessageCircle, 
   Target, 
   Gamepad2, 
   BookOpen, 
   Sparkles, 
-  TrendingUp, 
-  CheckCircle2, 
-  ArrowRight,
   Dog,
   User,
-  FileText 
+  FileText,
+  Wind,
+  Smile,
+  Meh,
+  Frown,
+  Quote,
+  RefreshCw,
+  Heart
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/")({ component: Home });
 
-function getDailyPeriodKey() {
-  const d = new Date();
-  return `d-${d.toISOString().slice(0, 10)}`;
-}
+const DAILY_QUOTES = [
+  "No tienes que resolver toda tu vida hoy, solo dar el siguiente paso.",
+  "Tus sentimientos son válidos, dales espacio para ser escuchados.",
+  "Incluso los días nublados ayudan a crecer a los árboles más fuertes.",
+  "Cuidar tu paz mental es la mejor decisión que puedes tomar hoy.",
+  "Eres más fuerte y resiliente de lo que te das crédito."
+];
 
-function Home() {
+export function Home() {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
-  const currentDailyKey = getDailyPeriodKey();
 
-  const { data: missions } = useQuery({
-    queryKey: ["home-missions"],
-    queryFn: async () => (await supabase.from("missions").select("*").eq("active", true)).data ?? [],
-  });
+  // Estados para las herramientas locales autónomas
+  const [selectedMood, setSelectedMood] = useState<string | null>(null);
+  const [isBreathing, setIsBreathing] = useState(false);
+  const [breathPhase, setBreathPhase] = useState<"Inhala" | "Sostén" | "Exhala">("Inhala");
+  const [quoteIndex, setQuoteIndex] = useState(0);
 
-  const { data: userProgress } = useQuery({
-    queryKey: ["home-mission-progress", user?.id, currentDailyKey],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("mission_progress")
-        .select("mission_id")
-        .eq("user_id", user!.id)
-        .eq("period_key", currentDailyKey);
-      return data ?? [];
-    },
-  });
+  // Animación del ejercicio de respiración
+  useEffect(() => {
+    if (!isBreathing) return;
+    const interval = setInterval(() => {
+      setBreathPhase((prev) => {
+        if (prev === "Inhala") return "Sostén";
+        if (prev === "Sostén") return "Exhala";
+        return "Inhala";
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [isBreathing]);
 
   if (!profile) {
     return (
@@ -60,10 +66,6 @@ function Home() {
   const first = profile.full_name ? profile.full_name.split(" ")[0] : "Amigo";
   const pct = Math.min(100, (xpIntoLevel / nextLevelXp) * 100);
 
-  const completedIds = new Set(userProgress?.map((p: any) => p.mission_id) || []);
-  const pendingMissions = missions?.filter((m: any) => !completedIds.has(m.id)).slice(0, 3) || [];
-
-  // 🔒 Verificar si el usuario es estudiante
   const isStudentRole = profile.user_type === "estudiante" || profile.user_type === "student";
 
   return (
@@ -107,7 +109,6 @@ function Home() {
           <QuickCard to="/app/chat" icon={MessageCircle} title="Hablar con Ely" desc="Estoy aquí para escucharte" color="from-purple-500 to-indigo-600" />
           <QuickCard to="/app/misiones" icon={Target} title="Misiones" desc="Suma XP hoy" color="from-emerald-500 to-teal-600" />
           
-          {/* 🔒 Tarjeta de Encuestas condicional: Solo visible para estudiantes */}
           {isStudentRole && (
             <QuickCard to="/app/encuestas" icon={FileText} title="Encuestas" desc="Queremos saber cómo estás" color="from-teal-500 to-emerald-600" />
           )}
@@ -120,55 +121,108 @@ function Home() {
         </div>
       </div>
 
-      {/* Misiones sugeridas */}
-      <div className="card-soft p-5 md:p-6 bg-card border shadow-sm rounded-3xl">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
-              <TrendingUp className="h-5 w-5" />
-            </div>
+      {/* 🌟 NUEVO: Rincón de Bienestar & Herramientas Interactivas (Sin BD) */}
+      <div className="space-y-3">
+        <h2 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground px-1">Refugio Diario de Calma</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          
+          {/* 1. Semáforo Emocional Exprés */}
+          <div className="p-5 bg-card border border-border/60 rounded-3xl shadow-xs flex flex-col justify-between space-y-3">
             <div>
-              <h2 className="text-base md:text-lg font-bold">Misiones sugeridas hoy</h2>
-              <p className="text-xs text-muted-foreground">Completa estas tareas para potenciar tu día</p>
+              <div className="flex items-center gap-2 text-primary font-bold text-sm mb-1">
+                <Heart className="w-4 h-4 fill-primary/20" />
+                <span>¿Cómo te sientes ahora?</span>
+              </div>
+              <p className="text-xs text-muted-foreground">Toca una opción para recibir un abrazo virtual.</p>
+            </div>
+
+            <div className="flex justify-around items-center py-2">
+              <button 
+                onClick={() => setSelectedMood("bien")}
+                className={`p-3 rounded-2xl transition-all flex flex-col items-center gap-1 cursor-pointer ${selectedMood === "bien" ? "bg-emerald-500/20 text-emerald-500 scale-110 ring-2 ring-emerald-500" : "hover:bg-secondary"}`}
+              >
+                <Smile className="w-7 h-7" />
+                <span className="text-[10px] font-bold">Bien</span>
+              </button>
+              <button 
+                onClick={() => setSelectedMood("neutral")}
+                className={`p-3 rounded-2xl transition-all flex flex-col items-center gap-1 cursor-pointer ${selectedMood === "neutral" ? "bg-amber-500/20 text-amber-500 scale-110 ring-2 ring-amber-500" : "hover:bg-secondary"}`}
+              >
+                <Meh className="w-7 h-7" />
+                <span className="text-[10px] font-bold">Pasable</span>
+              </button>
+              <button 
+                onClick={() => setSelectedMood("mal")}
+                className={`p-3 rounded-2xl transition-all flex flex-col items-center gap-1 cursor-pointer ${selectedMood === "mal" ? "bg-rose-500/20 text-rose-500 scale-110 ring-2 ring-rose-500" : "hover:bg-secondary"}`}
+              >
+                <Frown className="w-7 h-7" />
+                <span className="text-[10px] font-bold">Abrumado</span>
+              </button>
+            </div>
+
+            <div className="text-xs font-medium text-center bg-secondary/50 p-2.5 rounded-xl text-foreground/80 min-h-[42px] flex items-center justify-center">
+              {selectedMood === "bien" && "¡Qué alegría! Aprovecha esa buena energía hoy. ✨"}
+              {selectedMood === "neutral" && "Tener días tranquilos o normales está completamente bien. 🌿"}
+              {selectedMood === "mal" && "Recuerda que no estás solo. Ely está aquí en el chat para ti. 💜"}
+              {!selectedMood && "Haz clic en una carita para registrar tu momento."}
             </div>
           </div>
-          <Link to="/app/misiones" className="text-xs font-bold text-primary hover:underline flex items-center gap-1">
-            Ver todas <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {pendingMissions.length === 0 ? (
-            <div className="col-span-full py-6 text-center space-y-2">
-              <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-              <div className="font-bold text-sm">¡Estás al día con todo!</div>
-              <p className="text-xs text-muted-foreground">Has completado tus misiones sugeridas por hoy.</p>
+          {/* 2. Ejercicio de Respiración Exprés */}
+          <div className="p-5 bg-gradient-to-br from-indigo-950/40 to-purple-950/40 border border-purple-500/20 rounded-3xl shadow-xs flex flex-col justify-between space-y-3">
+            <div>
+              <div className="flex items-center gap-2 text-purple-300 font-bold text-sm mb-1">
+                <Wind className="w-4 h-4" />
+                <span>Pausa de Respiración</span>
+              </div>
+              <p className="text-xs text-purple-200/70">Inhala y exhala para soltar la tensión acumulada.</p>
             </div>
-          ) : (
-            pendingMissions.map((m: any) => (
-              <Link 
-                key={m.id} 
-                to="/app/misiones" 
-                className="group rounded-2xl border p-4 bg-background/50 hover:bg-secondary/60 transition-all flex flex-col justify-between shadow-xs"
+
+            <div className="flex flex-col items-center justify-center py-2 space-y-2">
+              <div className={`w-16 h-16 rounded-full border-4 border-purple-400 flex items-center justify-center transition-all duration-1000 ${isBreathing ? "scale-125 bg-purple-500/20 border-purple-300 shadow-lg shadow-purple-500/30" : "scale-100"}`}>
+                <span className="text-xs font-extrabold text-purple-200">
+                  {isBreathing ? breathPhase : "Listo"}
+                </span>
+              </div>
+            </div>
+
+            <button 
+              onClick={() => setIsBreathing(!isBreathing)}
+              className="w-full py-2 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-all shadow-md cursor-pointer"
+            >
+              {isBreathing ? "Detener ejercicio" : "Iniciar respiración guiada"}
+            </button>
+          </div>
+
+          {/* 3. Inspiración Aleatoria */}
+          <div className="p-5 bg-card border border-border/60 rounded-3xl shadow-xs flex flex-col justify-between space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-amber-500 font-bold text-sm">
+                <Quote className="w-4 h-4" />
+                <span>Mensaje para hoy</span>
+              </div>
+              <button 
+                onClick={() => setQuoteIndex((prev) => (prev + 1) % DAILY_QUOTES.length)}
+                className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                title="Cambiar pensamiento"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                      +{m.xp_reward} XP
-                    </span>
-                  </div>
-                  <div className="font-bold text-sm text-foreground group-hover:text-primary transition-colors truncate">{m.title}</div>
-                  <div className="text-xs text-muted-foreground line-clamp-2 mt-1">{m.description}</div>
-                </div>
-                <div className="mt-4 flex items-center gap-1 text-xs font-bold text-primary">
-                  <span>Empezar misión</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </div>
-              </Link>
-            ))
-          )}
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <div className="italic text-xs md:text-sm text-foreground/90 leading-relaxed font-medium bg-amber-500/5 p-4 rounded-2xl border border-amber-500/10 flex-1 flex items-center">
+              "{DAILY_QUOTES[quoteIndex]}"
+            </div>
+
+            <div className="text-[10px] text-muted-foreground text-right">
+              ~ Sabiduría Ely 🐘
+            </div>
+          </div>
+
         </div>
       </div>
+
     </div>
   );
 }
