@@ -10,7 +10,8 @@ type LovableEvents = {
     context?: Record<string, unknown>,
     options?: LovableErrorOptions,
   ) => void;
-};
+}; 
+
 
 declare global {
   interface Window {
