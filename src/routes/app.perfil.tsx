@@ -5,7 +5,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AvatarSVG } from "@/components/avatar-svg";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
-import { LogOut, Save, UserCheck, Trophy, Gamepad2, Zap } from "lucide-react";
+import { LogOut, Save, UserCheck, Trophy, Gamepad2, Zap, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/app/perfil")({ component: ProfilePage });
@@ -16,6 +16,8 @@ function ProfilePage() {
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [name, setName] = useState<string>("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Sincronizar el input con el nombre actual del perfil al cargar
   useEffect(() => {
@@ -74,6 +76,24 @@ function ProfilePage() {
   async function logout() { 
     await supabase.auth.signOut(); 
     navigate({ to: "/auth" }); 
+  }
+
+  async function handleDeleteAccount() {
+    setDeleting(true);
+    try {
+      // Executa la función SQL delete_user que elimina al usuario de auth.users
+      const { error } = await supabase.rpc("delete_user");
+      if (error) throw error;
+
+      // Cierra la sesión
+      await supabase.auth.signOut();
+      
+      toast.success("Tu cuenta y datos han sido eliminados correctamente.");
+      navigate({ to: "/auth" });
+    } catch (err: any) {
+      toast.error("Hubo un error al eliminar tu cuenta: " + err.message);
+      setDeleting(false);
+    }
   }
 
   return (
@@ -141,16 +161,59 @@ function ProfilePage() {
           </div>
         </div>
 
-        <div className="pt-2">
+        <div className="pt-2 space-y-3">
           <button 
             onClick={logout} 
-            className="w-full rounded-2xl border border-destructive/30 bg-destructive/5 hover:bg-destructive/10 text-destructive py-3.5 px-4 font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-2xs cursor-pointer active:scale-98"
+            className="w-full rounded-2xl border border-border/80 bg-secondary/50 hover:bg-secondary text-foreground py-3.5 px-4 font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-2xs cursor-pointer active:scale-98"
           >
             <LogOut className="h-4 w-4" /> 
             Cerrar sesión de forma segura
           </button>
+
+          <button 
+            onClick={() => setShowDeleteModal(true)} 
+            className="w-full rounded-2xl border border-destructive/30 bg-destructive/5 hover:bg-destructive/10 text-destructive py-3.5 px-4 font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-2xs cursor-pointer active:scale-98"
+          >
+            <Trash2 className="h-4 w-4" /> 
+            Eliminar cuenta permanentemente
+          </button>
         </div>
       </div>
+
+      {/* Modal de Confirmación */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border/80 rounded-3xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+            <div className="w-12 h-12 bg-destructive/10 text-destructive rounded-2xl flex items-center justify-center border border-destructive/20">
+              <AlertTriangle className="w-6 h-6" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-black text-foreground">¿Eliminar tu cuenta?</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Esta acción es <strong className="text-destructive font-semibold">irreversible</strong>. Todos tus datos, progreso, misiones y récords serán eliminados permanentemente de nuestros servidores.
+              </p>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                disabled={deleting}
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 rounded-2xl border border-border bg-background py-3 text-sm font-bold transition-all hover:bg-accent cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                disabled={deleting}
+                onClick={handleDeleteAccount}
+                className="flex-1 rounded-2xl bg-destructive text-destructive-foreground py-3 text-sm font-bold shadow-md hover:bg-destructive/90 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Sí, eliminar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
