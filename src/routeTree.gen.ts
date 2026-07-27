@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as CuentaVerificadaRouteImport } from './routes/cuenta-verificada'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -42,6 +43,11 @@ import { Route as AppJuegosCazadoresRouteImport } from './routes/app.juegos.caza
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CuentaVerificadaRoute = CuentaVerificadaRouteImport.update({
+  id: '/cuenta-verificada',
+  path: '/cuenta-verificada',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -190,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/cuenta-verificada': typeof CuentaVerificadaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/alertas': typeof AdminAlertasRoute
   '/admin/encuestas': typeof AdminEncuestasRoute
@@ -219,6 +226,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cuenta-verificada': typeof CuentaVerificadaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/alertas': typeof AdminAlertasRoute
   '/admin/encuestas': typeof AdminEncuestasRoute
@@ -250,6 +258,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/app': typeof AppRouteWithChildren
   '/auth': typeof AuthRoute
+  '/cuenta-verificada': typeof CuentaVerificadaRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin/alertas': typeof AdminAlertasRoute
   '/admin/encuestas': typeof AdminEncuestasRoute
@@ -283,6 +292,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/auth'
+    | '/cuenta-verificada'
     | '/reset-password'
     | '/admin/alertas'
     | '/admin/encuestas'
@@ -312,6 +322,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/cuenta-verificada'
     | '/reset-password'
     | '/admin/alertas'
     | '/admin/encuestas'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/app'
     | '/auth'
+    | '/cuenta-verificada'
     | '/reset-password'
     | '/admin/alertas'
     | '/admin/encuestas'
@@ -374,6 +386,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CuentaVerificadaRoute: typeof CuentaVerificadaRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiChatRoute: typeof ApiChatRoute
 }
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cuenta-verificada': {
+      id: '/cuenta-verificada'
+      path: '/cuenta-verificada'
+      fullPath: '/cuenta-verificada'
+      preLoaderRoute: typeof CuentaVerificadaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -663,6 +683,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   AuthRoute: AuthRoute,
+  CuentaVerificadaRoute: CuentaVerificadaRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiChatRoute: ApiChatRoute,
 }
