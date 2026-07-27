@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ElyMascot } from "@/components/brand";
 import { useSession, useProfile, computeLevel } from "@/lib/session";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { 
   MessageCircle, 
   Target, 
@@ -11,13 +11,15 @@ import {
   Dog,
   User,
   FileText,
-  Wind,
   Smile,
   Meh,
   Frown,
   Quote,
   RefreshCw,
-  Heart
+  Heart,
+  BatteryCharging,
+  Zap,
+  Coffee
 } from "lucide-react";
 
 export const Route = createFileRoute("/app/")({ component: Home });
@@ -30,28 +32,23 @@ const DAILY_QUOTES = [
   "Eres más fuerte y resiliente de lo que te das crédito."
 ];
 
+const QUICK_PAUSES = [
+  "Bebe un vaso de agua despacio sintiendo la temperatura.",
+  "Mira por la ventana y busca 3 cosas de color verde.",
+  "Estira los brazos hacia el techo durante 10 segundos.",
+  "Cierra los ojos y haz 3 respiraciones profundas.",
+  "Sube y baja los hombros para liberar la tensión acumulada."
+];
+
 export function Home() {
   const { user } = useSession();
   const { profile } = useProfile(user?.id);
 
-  // Estados para las herramientas locales autónomas
+  // Estados interactivos locales
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
-  const [isBreathing, setIsBreathing] = useState(false);
-  const [breathPhase, setBreathPhase] = useState<"Inhala" | "Sostén" | "Exhala">("Inhala");
+  const [energyLevel, setEnergyLevel] = useState<number | null>(null);
+  const [pauseIndex, setPauseIndex] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState(0);
-
-  // Animación del ejercicio de respiración
-  useEffect(() => {
-    if (!isBreathing) return;
-    const interval = setInterval(() => {
-      setBreathPhase((prev) => {
-        if (prev === "Inhala") return "Sostén";
-        if (prev === "Sostén") return "Exhala";
-        return "Inhala";
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [isBreathing]);
 
   if (!profile) {
     return (
@@ -121,7 +118,7 @@ export function Home() {
         </div>
       </div>
 
-      {/* 🌟 NUEVO: Rincón de Bienestar & Herramientas Interactivas (Sin BD) */}
+      {/* 🌟 Rincón de Bienestar Interactivo */}
       <div className="space-y-3">
         <h2 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground px-1">Refugio Diario de Calma</h2>
         
@@ -169,58 +166,87 @@ export function Home() {
             </div>
           </div>
 
-          {/* 2. Ejercicio de Respiración Exprés */}
-          <div className="p-5 bg-gradient-to-br from-indigo-950/40 to-purple-950/40 border border-purple-500/20 rounded-3xl shadow-xs flex flex-col justify-between space-y-3">
+          {/* 2. Medidor de Batería Emocional / Energía */}
+          <div className="p-5 bg-card border border-border/60 rounded-3xl shadow-xs flex flex-col justify-between space-y-3">
             <div>
-              <div className="flex items-center gap-2 text-purple-300 font-bold text-sm mb-1">
-                <Wind className="w-4 h-4" />
-                <span>Pausa de Respiración</span>
+              <div className="flex items-center gap-2 text-blue-500 font-bold text-sm mb-1">
+                <BatteryCharging className="w-4 h-4" />
+                <span>Nivel de Energía</span>
               </div>
-              <p className="text-xs text-purple-200/70">Inhala y exhala para soltar la tensión acumulada.</p>
+              <p className="text-xs text-muted-foreground">¿Cuánta batería tienes para rendir hoy?</p>
             </div>
 
-            <div className="flex flex-col items-center justify-center py-2 space-y-2">
-              <div className={`w-16 h-16 rounded-full border-4 border-purple-400 flex items-center justify-center transition-all duration-1000 ${isBreathing ? "scale-125 bg-purple-500/20 border-purple-300 shadow-lg shadow-purple-500/30" : "scale-100"}`}>
-                <span className="text-xs font-extrabold text-purple-200">
-                  {isBreathing ? breathPhase : "Listo"}
-                </span>
-              </div>
+            <div className="flex justify-between items-center gap-2 py-1">
+              {[1, 2, 3, 4, 5].map((level) => (
+                <button
+                  key={level}
+                  onClick={() => setEnergyLevel(level)}
+                  className={`flex-1 py-2.5 rounded-xl font-extrabold text-xs transition-all cursor-pointer ${
+                    energyLevel === level
+                      ? "bg-blue-600 text-white scale-105 shadow-md"
+                      : "bg-secondary text-muted-foreground hover:bg-secondary/80"
+                  }`}
+                >
+                  {level * 20}%
+                </button>
+              ))}
             </div>
 
-            <button 
-              onClick={() => setIsBreathing(!isBreathing)}
-              className="w-full py-2 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-all shadow-md cursor-pointer"
-            >
-              {isBreathing ? "Detener ejercicio" : "Iniciar respiración guiada"}
-            </button>
+            <div className="text-xs font-medium text-center bg-secondary/50 p-2.5 rounded-xl text-foreground/80 min-h-[42px] flex items-center justify-center">
+              {energyLevel === 1 && "Batería baja. Prioriza descansar y no te exijas demasiado hoy. 🪫"}
+              {energyLevel === 2 && "Un poco cansado. Tómate las cosas con calma y a tu ritmo. ☕"}
+              {energyLevel === 3 && "Energía moderada. Buen balance para completar tus actividades. 🌱"}
+              {energyLevel === 4 && "¡Buena energía! Es un gran momento para avanzar tus pendientes. 🚀"}
+              {energyLevel === 5 && "¡Carga al 100%! Estás listo para romperla hoy. ⚡"}
+              {!energyLevel && "Selecciona tu % de energía para ver un consejo."}
+            </div>
           </div>
 
-          {/* 3. Inspiración Aleatoria */}
+          {/* 3. Micro-Pausa de Desconexión */}
           <div className="p-5 bg-card border border-border/60 rounded-3xl shadow-xs flex flex-col justify-between space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-amber-500 font-bold text-sm">
-                <Quote className="w-4 h-4" />
-                <span>Mensaje para hoy</span>
+              <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm">
+                <Coffee className="w-4 h-4" />
+                <span>Micro-Pausa Activa</span>
               </div>
               <button 
-                onClick={() => setQuoteIndex((prev) => (prev + 1) % DAILY_QUOTES.length)}
+                onClick={() => setPauseIndex((prev) => (prev + 1) % QUICK_PAUSES.length)}
                 className="p-1.5 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                title="Cambiar pensamiento"
+                title="Sugerir otra pausa"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="italic text-xs md:text-sm text-foreground/90 leading-relaxed font-medium bg-amber-500/5 p-4 rounded-2xl border border-amber-500/10 flex-1 flex items-center">
-              "{DAILY_QUOTES[quoteIndex]}"
+            <div className="text-xs md:text-sm text-foreground/90 font-medium bg-emerald-500/5 p-4 rounded-2xl border border-emerald-500/10 flex-1 flex items-center">
+              "{QUICK_PAUSES[pauseIndex]}"
             </div>
 
-            <div className="text-[10px] text-muted-foreground text-right">
-              ~ Sabiduría Ely 🐘
+            <div className="text-[10px] text-muted-foreground text-right font-medium">
+              Tómate 2 minutos sin pantallas 🌿
             </div>
           </div>
 
         </div>
+
+        {/* Cita / Frase del día */}
+        <div className="p-4 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border border-purple-500/20 rounded-2xl flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400 shrink-0">
+              <Quote className="w-4 h-4" />
+            </div>
+            <p className="text-xs md:text-sm font-semibold italic text-foreground/90">
+              "{DAILY_QUOTES[quoteIndex]}"
+            </p>
+          </div>
+          <button 
+            onClick={() => setQuoteIndex((prev) => (prev + 1) % DAILY_QUOTES.length)}
+            className="p-2 rounded-xl hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors shrink-0 cursor-pointer"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
+
       </div>
 
     </div>
